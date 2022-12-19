@@ -76,7 +76,10 @@
 
     
     
-<p>Another example of how to use time-varying. Let’s say we want to break every 6 hours. Just add that as a feature. Here we give it a count with infinite lookback, to count the 6-hour period we’re in. We also want to include the endpoint, which we encode with aggregation “event”. Finally, if there are multiple encounters per person, you can just add another row to the exposure, and tag it with another id which gets carried forward by <code><a href="../reference/tv.html">time_varying()</a></code>.</p>
+<div id="an-example" class="section level1">
+<h1 class="hasAnchor">
+<a href="#an-example" class="anchor"></a>An example</h1>
+<p>Another example of how to use time-varying. Let’s say we want to break every 6 hours. Just add that as a feature. Here we give it a count with infinite lookback, to count the 6-hour period we’re in. We also want to include the endpoint, which we encode with aggregation “event”.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">tv</span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/">tibble</a></span><span class="op">)</span>
@@ -146,11 +149,53 @@
 <span class="co">#&gt; 5           11              7200                 118            2           0</span>
 <span class="co">#&gt; 6           11                NA                  NA            3           1</span></code></pre></div>
 <p>Note that the lactate lab from 2021 does not contribute to a new row because it is not inside the exposure window. Note also that the lookback is ignored for aggregation of type “event”.</p>
+</div>
+<div id="overclocking-the-time_varying-function" class="section level1">
+<h1 class="hasAnchor">
+<a href="#overclocking-the-time_varying-function" class="anchor"></a>Overclocking the <code>time_varying()</code> function</h1>
+<div id="multiple-exposures-per-person" class="section level2">
+<h2 class="hasAnchor">
+<a href="#multiple-exposures-per-person" class="anchor"></a>Multiple exposures per person</h2>
+<p>If there are multiple encounters per person, you can just add another row to the exposure data, and tag it with another id which gets carried forward by <code><a href="../reference/tv.html">time_varying()</a></code>.</p>
+</div>
+<div id="only-break-every-hour" class="section level2">
+<h2 class="hasAnchor">
+<a href="#only-break-every-hour" class="anchor"></a>Only break every hour</h2>
+<p>Set <code>use_for_grid=FALSE</code> for everything except an “hourly” feature. Then calculate every hour that the patient is at risk; set “feature” to “hourly”, set “datetime” to the time stamp, and set “value” to <code><a href="https://lubridate.tidyverse.org/reference/hour.html">hour(datetime)</a></code>.</p>
+</div>
+<div id="create-an-indicator-for-if-a-situation-applies" class="section level2">
+<h2 class="hasAnchor">
+<a href="#create-an-indicator-for-if-a-situation-applies" class="anchor"></a>Create an indicator for if a situation applies</h2>
+<p>Start with a dataset of start time and end time. The pseudocode below should do the trick:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">data</span> <span class="op">%&gt;%</span> 
+  <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html">pivot_longer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">start_time</span>, <span class="va">end_time</span><span class="op">)</span>, names_to <span class="op">=</span> <span class="st">"which_time"</span>, values_to <span class="op">=</span> <span class="st">"datetime"</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>
+    value <span class="op">=</span> <span class="op">+</span><span class="op">(</span><span class="va">which_time</span> <span class="op">==</span> <span class="st">"start_time"</span><span class="op">)</span>
+  <span class="op">)</span></code></pre></div>
+</div>
+<div id="create-a-count-of-how-many-times-a-situation-applies" class="section level2">
+<h2 class="hasAnchor">
+<a href="#create-a-count-of-how-many-times-a-situation-applies" class="anchor"></a>Create a count of how many times a situation applies</h2>
+<p>Start with a dataset of start time and end time. The pseudocode below should do the trick:</p>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">data</span> <span class="op">%&gt;%</span> 
+  <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html">pivot_longer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">start_time</span>, <span class="va">end_time</span><span class="op">)</span>, names_to <span class="op">=</span> <span class="st">"which_time"</span>, values_to <span class="op">=</span> <span class="st">"datetime"</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="va">pat_id</span>, <span class="va">datetime</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">pat_id</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>
+    value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cumsum.html">cumsum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">which_time</span> <span class="op">==</span> <span class="st">"start_time"</span>, <span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">ungroup</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+</div>
+</div>
   </div>
 
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
 
-      </div>
+        <nav id="toc" data-toggle="toc"><h2 data-toc-skip>Contents</h2>
+    </nav>
+</div>
 
 </div>
 

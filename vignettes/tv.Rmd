@@ -14,9 +14,9 @@ knitr::opts_chunk$set(
 )
 ```
 
+# An example
+
 Another example of how to use time-varying. Let's say we want to break every 6 hours. Just add that as a feature. Here we give it a count with infinite lookback, to count the 6-hour period we're in. We also want to include the endpoint, which we encode with aggregation "event".
-Finally, if there are multiple encounters per person, you can just add another row to the exposure, and tag it with another id which
-gets carried forward by `time_varying()`.
 
 ```{r}
 library(tv)
@@ -65,6 +65,41 @@ time_varying(data, specs, exposure = exposure, time_units = "seconds", n_cores =
 Note that the lactate lab from 2021 does not contribute to a new row because it is not inside the exposure window.
 Note also that the lookback is ignored for aggregation of type "event".
 
+# Overclocking the `time_varying()` function
 
+## Multiple exposures per person
 
+If there are multiple encounters per person, you can just add another row to the exposure data, and tag it with another id which
+gets carried forward by `time_varying()`.
 
+## Only break every hour
+
+Set `use_for_grid=FALSE` for everything except an "hourly" feature. Then calculate every hour that the patient is at risk; set
+"feature" to "hourly", set "datetime" to the time stamp, and set "value" to `hour(datetime)`.
+
+## Create an indicator for if a situation applies
+
+Start with a dataset of start time and end time. The pseudocode below should do the trick:
+
+```{r eval=FALSE}
+data %>% 
+  tidyr::pivot_longer(c(start_time, end_time), names_to = "which_time", values_to = "datetime") %>% 
+  dplyr::mutate(
+    value = +(which_time == "start_time")
+  )
+```
+
+## Create a count of how many times a situation applies
+
+Start with a dataset of start time and end time. The pseudocode below should do the trick:
+
+```{r eval=FALSE}
+data %>% 
+  tidyr::pivot_longer(c(start_time, end_time), names_to = "which_time", values_to = "datetime") %>% 
+  dplyr::arrange(pat_id, datetime) %>% 
+  dplyr::group_by(pat_id) %>% 
+  dplyr::mutate(
+    value = cumsum(ifelse(which_time == "start_time", 1, -1))
+  ) %>% 
+  dplyr::ungroup()
+```
