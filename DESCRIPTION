@@ -1,0 +1,28 @@
+Package: tv
+Title: Tools for creating time-varying datasets
+Version: 1.2.2
+Date: 2022-12-19
+Authors@R: c(
+    person("Ethan", "Heinzen", email = "heinzen.ethan@mayo.edu", role = c("aut", "cre")),
+    person("Patrick", "Wilson", role="ctb"),
+    person("Brendan", "Broderick", role="ctb")
+  )
+Description: Tools for creating time-varying datasets.
+Suggests:
+    knitr,
+    tibble,
+    rmarkdown
+Imports:
+    lubridate,
+    purrr,
+    glue,
+    dplyr,
+    magrittr,
+    rlang
+Depends:
+    R (>= 3.6.0)
+VignetteBuilder: knitr
+License: GPL (>= 2)
+RoxygenNote: 7.1.2
+LazyData: true
+Encoding: UTF-8
