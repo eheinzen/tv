@@ -1,7 +1,7 @@
 Package: tv
 Title: Tools for creating time-varying datasets
-Version: 1.2.2
-Date: 2022-12-19
+Version: 1.2.3
+Date: 2022-12-20
 Authors@R: c(
     person("Ethan", "Heinzen", email = "heinzen.ethan@mayo.edu", role = c("aut", "cre")),
     person("Patrick", "Wilson", role="ctb"),
