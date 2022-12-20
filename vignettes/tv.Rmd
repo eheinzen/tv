@@ -79,7 +79,8 @@ Set `use_for_grid=FALSE` for everything except an "hourly" feature. Then calcula
 
 ## Create an indicator for if a situation applies
 
-Start with a dataset of start time and end time. The pseudocode below should do the trick:
+Start with a dataset of start time and end time. IMPORTANT: be sure no intervals overlap; if they do, the next section would be better suited for you.
+Otherwise, the pseudocode below should do the trick:
 
 ```{r eval=FALSE}
 data %>% 
@@ -88,6 +89,8 @@ data %>%
     value = +(which_time == "start_time")
   )
 ```
+
+Then make the specs a "lvcf" with infinite lookback.
 
 ## Create a count of how many times a situation applies
 
@@ -103,3 +106,5 @@ data %>%
   ) %>% 
   dplyr::ungroup()
 ```
+
+Then make the specs a "lvcf" with infinite lookback.

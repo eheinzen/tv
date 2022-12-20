@@ -166,13 +166,14 @@
 <div id="create-an-indicator-for-if-a-situation-applies" class="section level2">
 <h2 class="hasAnchor">
 <a href="#create-an-indicator-for-if-a-situation-applies" class="anchor"></a>Create an indicator for if a situation applies</h2>
-<p>Start with a dataset of start time and end time. The pseudocode below should do the trick:</p>
+<p>Start with a dataset of start time and end time. IMPORTANT: be sure no intervals overlap; if they do, the next section would be better suited for you. Otherwise, the pseudocode below should do the trick:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">data</span> <span class="op">%&gt;%</span> 
   <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html">pivot_longer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">start_time</span>, <span class="va">end_time</span><span class="op">)</span>, names_to <span class="op">=</span> <span class="st">"which_time"</span>, values_to <span class="op">=</span> <span class="st">"datetime"</span><span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>
     value <span class="op">=</span> <span class="op">+</span><span class="op">(</span><span class="va">which_time</span> <span class="op">==</span> <span class="st">"start_time"</span><span class="op">)</span>
   <span class="op">)</span></code></pre></div>
+<p>Then make the specs a “lvcf” with infinite lookback.</p>
 </div>
 <div id="create-a-count-of-how-many-times-a-situation-applies" class="section level2">
 <h2 class="hasAnchor">
@@ -187,6 +188,7 @@
     value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cumsum.html">cumsum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">which_time</span> <span class="op">==</span> <span class="st">"start_time"</span>, <span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>
   <span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">ungroup</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<p>Then make the specs a “lvcf” with infinite lookback.</p>
 </div>
 </div>
   </div>
