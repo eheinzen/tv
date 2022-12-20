@@ -1,3 +1,9 @@
+# v1.2.3
+
+- Updated vignette.
+
+- Forced warnings to be printed as they occur, instead of when `tv::time_varying()` finishes.
+
 # v1.2.2
 
 - Added the aggregation option `"sum"`.

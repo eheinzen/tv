@@ -95,6 +95,8 @@ tv_sum <- function(x, ...) {
 #' @rdname tv
 #' @export
 time_varying <- function(x, specs, exposure, ..., time_units = c("days", "seconds"), id = "pat_id", n_cores = 1) {
+  opts <- options(warn = 1)
+  on.exit(options(opts))
   time_units <- match.arg(time_units)
   x <- check_tv_data(x, time_units = time_units, id = id)
   specs <- check_tv_specs(specs, unique(x$feature))
