@@ -13,6 +13,9 @@
 #'   The defaults for specs are to use everything for the grid creation, and to set \code{lookback_start=0}, with a message in both cases.
 #'   Currently supported aggregation functions include counting ("count" or "n"), last-value-carried forward ("last value" or "lvcf"),
 #'   any/none ("any" or "binary"), time since ("time since" or "ts"), min/max/mean, and the special "event" (for which lookbacks are ignored).
+#'
+#'   The lookback window begins at \code{row_start - lookback_end} and ends at \code{row_start - lookback_start}. Passing NA to either lookback
+#'   changes the corresponding window boundary to \code{exposure_start}.
 #' @examples
 #'   data(tv_example)
 #'   time_varying(tv_example$data, tv_example$specs, tv_example$exposure,
@@ -41,8 +44,7 @@ time_varying <- function(x, specs, exposure, ..., time_units = c("days", "second
     dplyr::mutate(
       row_stop = pmin(dplyr::lead(.data$row_start, 1), .data$exposure_stop, na.rm = TRUE)
     ) %>%
-    dplyr::ungroup() %>%
-    dplyr::select(-.data$exposure_start, -.data$exposure_stop)
+    dplyr::ungroup()
 
   FN <- if(n_cores > 1) parallel::mclapply else lapply
 
@@ -57,6 +59,8 @@ time_varying <- function(x, specs, exposure, ..., time_units = c("days", "second
     curr_grid <- grid[i, ]
     curr_grid$row_start <- as.numeric(curr_grid$row_start)
     curr_grid$row_stop <- as.numeric(curr_grid$row_stop)
+    curr_grid$exposure_start <- as.numeric(curr_grid$exposure_start)
+    curr_grid$exposure_stop <- as.numeric(curr_grid$exposure_stop)
     y <- x3[[as.character(curr_grid[[id]])]]
 
     tmp <- vapply(seq_len(nrow(specs)), function(s) {
@@ -70,6 +74,7 @@ time_varying <- function(x, specs, exposure, ..., time_units = c("days", "second
         max = tv_max,
         min = tv_min,
         mean = tv_mean,
+        median = tv_median,
         sum = tv_sum,
         event = tv_count
       )
@@ -77,7 +82,17 @@ time_varying <- function(x, specs, exposure, ..., time_units = c("days", "second
       if(curr_spec$aggregation == "event") {
         idx <- idx & y$datetime > curr_grid$row_start & y$datetime <= curr_grid$row_stop
       } else {
-        idx <- idx & y$datetime <= curr_grid$row_start - curr_spec$lookback_start & y$datetime >= curr_grid$row_start - curr_spec$lookback_end
+        if(is.na(curr_spec$lookback_start)) {
+          idx <- idx & y$datetime <= curr_grid$exposure_start
+        } else {
+          idx <- idx & y$datetime <= curr_grid$row_start - curr_spec$lookback_start
+        }
+
+        if(is.na(curr_spec$lookback_end)) {
+          idx <- idx & y$datetime >= curr_grid$exposure_start
+        } else {
+          idx <- idx & y$datetime >= curr_grid$row_start - curr_spec$lookback_end
+        }
       }
       FUN(y[idx, ], feature = curr_spec$feature, current_time = curr_grid$row_start)
     }, NA_real_)
@@ -160,7 +175,7 @@ check_tv_specs <- function(specs, expected_features = NULL) {
     message("Setting 'lookback_start' to 0")
     specs$lookback_start <- 0
   }
-  if(any(specs$lookback_end < specs$lookback_start)) stop("Some lookback_end's are smaller than lookback_start's")
+  if(any(specs$lookback_end < specs$lookback_start, na.rm = TRUE)) stop("Some lookback_end's are smaller than lookback_start's")
   if("aggregation" %nin% names(specs)) stop("Please specify an aggregation column in 'specs'")
   specs$aggregation <- c(
     count = "count",
@@ -174,6 +189,7 @@ check_tv_specs <- function(specs, expected_features = NULL) {
     min = "min",
     max = "max",
     mean = "mean",
+    median = "median",
     sum = "sum",
     event = "event"
   )[specs$aggregation]

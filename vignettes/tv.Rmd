@@ -69,8 +69,16 @@ Note also that the lookback is ignored for aggregation of type "event".
 
 ## Multiple exposures per person
 
-If there are multiple encounters per person, you can just add another row to the exposure data, and tag it with another id which
-gets carried forward by `time_varying()`.
+If there are multiple encounters per person, you can just add another row to the exposure data,
+and tag it with another id column which gets carried forward by `time_varying()`.
+
+## Only look back to the beginning of the exposure instead of a fixed lookback
+
+Simply pass the special value NA in the "lookback_end" column.
+
+## Only look at things from before the exposure instead of a fixed lookback
+
+Simply pass the special value NA in the "lookback_start" column. You'll probably also want something like "lookback_end = Inf".
 
 ## Only break every hour
 
