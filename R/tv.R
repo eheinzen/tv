@@ -6,7 +6,6 @@
 #' @param time_units What time units should be used? Seconds or days
 #' @param n_cores Number of cores to use
 #' @param ... Other arguments (not used at this time)
-#' @param current_time The current grid row's time
 #' @param expected_features A vector of expected features based on the data.
 #' @param expected_ids A vector of expected ids based on the data.
 #' @param id The id to use. Default is "pat_id"
