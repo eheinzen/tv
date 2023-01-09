@@ -6,7 +6,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Example data for time-varying — tv_example • tv</title>
+<title>Time-varying aggregation functions — tv_aggregation • tv</title>
 
 
 <!-- jquery -->
@@ -39,8 +39,8 @@
 
 
 
-<meta property="og:title" content="Example data for time-varying — tv_example" />
-<meta property="og:description" content="Example data for time-varying" />
+<meta property="og:title" content="Time-varying aggregation functions — tv_aggregation" />
+<meta property="og:description" content="Time-varying aggregation functions" />
 
 
 
@@ -109,29 +109,50 @@
 <div class="row">
   <div class="col-md-9 contents">
     <div class="page-header">
-    <h1>Example data for time-varying</h1>
+    <h1>Time-varying aggregation functions</h1>
     
-    <div class="hidden name"><code>tv_example.Rd</code></div>
+    <div class="hidden name"><code>tv_aggregation.Rd</code></div>
     </div>
 
     <div class="ref-description">
-    <p>Example data for time-varying</p>
+    <p>Time-varying aggregation functions</p>
     </div>
 
-    <pre class="usage"><span class='va'>tv_example</span></pre>
+    <pre class="usage"><span class='fu'>tv_count</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>...</span><span class='op'>)</span>
 
+<span class='fu'>tv_any</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>...</span><span class='op'>)</span>
 
-    <h2 class="hasAnchor" id="format"><a class="anchor" href="#format"></a>Format</h2>
+<span class='fu'>tv_lvcf</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>...</span><span class='op'>)</span>
 
-    <p>A list</p><dl>
-  <dt>data</dt><dd><p>The data</p></dd>
-  <dt>specs</dt><dd><p>The specs</p></dd>
+<span class='fu'>tv_ts</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>current_time</span>, <span class='va'>...</span><span class='op'>)</span>
 
-</dl>
+<span class='fu'>tv_min</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>...</span><span class='op'>)</span>
 
-    <h2 class="hasAnchor" id="see-also"><a class="anchor" href="#see-also"></a>See also</h2>
+<span class='fu'>tv_max</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>...</span><span class='op'>)</span>
 
-    <div class='dont-index'><p><code><a href='tv.html'>tv</a></code></p></div>
+<span class='fu'>tv_mean</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>...</span><span class='op'>)</span>
+
+<span class='fu'>tv_median</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>...</span><span class='op'>)</span>
+
+<span class='fu'>tv_sum</span><span class='op'>(</span><span class='va'>x</span>, <span class='va'>...</span><span class='op'>)</span></pre>
+
+    <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
+    <table class="ref-arguments">
+    <colgroup><col class="name" /><col class="desc" /></colgroup>
+    <tr>
+      <th>x</th>
+      <td><p>A data.frame with four columns: &lt;id&gt;, "feature", "datetime", "value"</p></td>
+    </tr>
+    <tr>
+      <th>...</th>
+      <td><p>Other arguments (not used at this time)</p></td>
+    </tr>
+    <tr>
+      <th>current_time</th>
+      <td><p>The current grid row's time</p></td>
+    </tr>
+    </table>
+
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">

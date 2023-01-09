@@ -1,3 +1,15 @@
+# v1.3.0
+
+- Reorganized the help pages.
+
+- Added special behavior for when `"lookback_end"` or `"lookback_start"` are `NA`.
+
+- The grid now includes `"exposure_start"` and `"exposure_stop"`.
+
+- Added aggregation option `"tv_median"`.
+
+- Added tests with `testthat`.
+
 # v1.2.3
 
 - Updated vignette.
