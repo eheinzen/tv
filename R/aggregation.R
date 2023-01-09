@@ -52,6 +52,12 @@ tv_mean <- function(x, ...) {
 
 #' @rdname tv_aggregation
 #' @export
+tv_median <- function(x, ...) {
+  if(nrow(x) > 0) stats::median(x$value, na.rm = TRUE) else NA_real_
+}
+
+#' @rdname tv_aggregation
+#' @export
 tv_sum <- function(x, ...) {
   sum(x$value, na.rm = TRUE)
 }

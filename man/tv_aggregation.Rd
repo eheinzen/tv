@@ -9,6 +9,7 @@
 \alias{tv_min}
 \alias{tv_max}
 \alias{tv_mean}
+\alias{tv_median}
 \alias{tv_sum}
 \title{Time-varying aggregation functions}
 \usage{
@@ -25,6 +26,8 @@ tv_min(x, ...)
 tv_max(x, ...)
 
 tv_mean(x, ...)
+
+tv_median(x, ...)
 
 tv_sum(x, ...)
 }
