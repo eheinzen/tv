@@ -5,10 +5,12 @@
 #' @param exposure a data.frame with (at least) three columns: <id>, "exposure_start", "exposure_stop"
 #' @param time_units What time units should be used? Seconds or days
 #' @param n_cores Number of cores to use
-#' @param ... Other arguments (not used at this time)
+#' @param ... Other arguments. Currently just passes \code{check_overlap}.
 #' @param expected_features A vector of expected features based on the data.
 #' @param expected_ids A vector of expected ids based on the data.
 #' @param id The id to use. Default is "pat_id"
+#' @param check_overlap Should overlap be checked among exposure rows? A potentially costly operation,
+#'   so you can opt out of it if you're really sure.
 #' @details
 #'   The defaults for specs are to use everything for the grid creation, and to set \code{lookback_start=0}, with a message in both cases.
 #'   Currently supported aggregation functions include counting ("count" or "n"), last-value-carried forward ("last value" or "lvcf"),
@@ -31,7 +33,7 @@ time_varying <- function(x, specs, exposure, ..., time_units = c("days", "second
   time_units <- match.arg(time_units)
   x <- check_tv_data(x, time_units = time_units, id = id)
   specs <- check_tv_specs(specs, unique(x$feature))
-  exposure <- check_tv_exposure(exposure, expected_ids = unique(x[[id]]), time_units = time_units, id = id)
+  exposure <- check_tv_exposure(exposure, expected_ids = unique(x[[id]]), time_units = time_units, id = id, ...)
 
   grid <- x %>%
     dplyr::filter(.data$feature %in% specs$feature[specs$use_for_grid]) %>%
@@ -131,7 +133,7 @@ check_tv_data <- function(x, time_units, id) {
 
 #' @rdname tv
 #' @export
-check_tv_exposure <- function(x, expected_ids, time_units, id) {
+check_tv_exposure <- function(x, expected_ids, time_units, id, ..., check_overlap = TRUE) {
   cols <- c(id, "exposure_start", "exposure_stop")
   if(!all(cols %in% names(x))) {
     stop("'exposure' is missing some columns: ", paste0(setdiff(cols, names(x)), collapse = ", "))
@@ -152,6 +154,21 @@ check_tv_exposure <- function(x, expected_ids, time_units, id) {
   if(any(idx)) {
     warning("There are ", sum(idx), " missing times being removed from the exposures.")
     x <- x[!idx, ]
+  }
+
+  if(check_overlap) {
+    y <- dplyr::mutate(x, .exposure.row = dplyr::row_number())
+    z <- dplyr::inner_join(y, y, by = id) %>%
+      dplyr::filter(
+        .data$.exposure.row.x < .data$.exposure.row.y,
+        .data$exposure_start.y < .data$exposure_stop.x,
+        .data$exposure_stop.y > .data$exposure_start.x
+      )
+    if(nrow(z) > 0) {
+      print(z)
+      stop("There are overlaps in the exposure times. `time_varying()` will not return what you expect. ",
+           "If you are really sure you want to proceed, use the `check_overlap=FALSE` option.")
+    }
   }
 
   x

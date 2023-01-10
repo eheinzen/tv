@@ -114,3 +114,27 @@ test_that("the specs work", {
     ignore_attr = "coltype"
   )
 })
+
+
+
+test_that("overlaps are detected", {
+  expect_error(
+    capture.output(time_varying(
+      data.frame(pat_id = 1, feature = "lab", datetime = as.Date("2022-01-01"), value = 1),
+      specs = data.frame(
+        feature = "lab",
+        use_for_grid = FALSE,
+        lookback_start = 0,
+        lookback_end = 10,
+        aggregation = "lvcf"
+      ),
+      exposure = data.frame(
+        pat_id = c(1, 1),
+        exposure_start = as.Date(c("2022-01-01", "2022-01-02")),
+        exposure_stop = as.Date(c("2022-01-03", "2022-01-04"))
+      )
+    )),
+    "overlap"
+  )
+
+})

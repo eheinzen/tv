@@ -20,7 +20,7 @@ time_varying(
 
 check_tv_data(x, time_units, id)
 
-check_tv_exposure(x, expected_ids, time_units, id)
+check_tv_exposure(x, expected_ids, time_units, id, ..., check_overlap = TRUE)
 
 check_tv_specs(specs, expected_features = NULL)
 }
@@ -31,7 +31,7 @@ check_tv_specs(specs, expected_features = NULL)
 
 \item{exposure}{a data.frame with (at least) three columns: <id>, "exposure_start", "exposure_stop"}
 
-\item{...}{Other arguments (not used at this time)}
+\item{...}{Other arguments. Currently just passes \code{check_overlap}.}
 
 \item{time_units}{What time units should be used? Seconds or days}
 
@@ -40,6 +40,9 @@ check_tv_specs(specs, expected_features = NULL)
 \item{n_cores}{Number of cores to use}
 
 \item{expected_ids}{A vector of expected ids based on the data.}
+
+\item{check_overlap}{Should overlap be checked among exposure rows? A potentially costly operation,
+so you can opt out of it if you're really sure.}
 
 \item{expected_features}{A vector of expected features based on the data.}
 }
