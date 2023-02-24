@@ -1,3 +1,7 @@
+# tv v1.5.0
+
+- Changed the default number of cores to check if `"SLURM_CPUS_PER_TASK"` is defined.
+
 # tv v1.4.0
 
 - The exposures are now expected to be non-overlapping (although windows can touch when a start time
