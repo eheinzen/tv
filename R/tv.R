@@ -4,7 +4,8 @@
 #' @param specs a data.frame with four columns: "feature", "use_for_grid", "lookback_start", "lookback_end", "aggregation". See details below.
 #' @param exposure a data.frame with (at least) three columns: <id>, "exposure_start", "exposure_stop"
 #' @param time_units What time units should be used? Seconds or days
-#' @param n_cores Number of cores to use
+#' @param n_cores Number of cores to use. If slurm is being used, it checks the \code{SLURM_CPUS_PER_TASK} variable.
+#'   Else it defaults to 1, for no parallelization.
 #' @param ... Other arguments. Currently just passes \code{check_overlap}.
 #' @param expected_features A vector of expected features based on the data.
 #' @param expected_ids A vector of expected ids based on the data.
@@ -27,7 +28,8 @@ NULL
 
 #' @rdname tv
 #' @export
-time_varying <- function(x, specs, exposure, ..., time_units = c("days", "seconds"), id = "pat_id", n_cores = 1) {
+time_varying <- function(x, specs, exposure, ..., time_units = c("days", "seconds"), id = "pat_id",
+                         n_cores = as.numeric(Sys.getenv("SLURM_CPUS_PER_TASK", 1))) {
   opts <- options(warn = 1)
   on.exit(options(opts))
   time_units <- match.arg(time_units)

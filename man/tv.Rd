@@ -15,7 +15,7 @@ time_varying(
   ...,
   time_units = c("days", "seconds"),
   id = "pat_id",
-  n_cores = 1
+  n_cores = as.numeric(Sys.getenv("SLURM_CPUS_PER_TASK", 1))
 )
 
 check_tv_data(x, time_units, id)
@@ -37,7 +37,8 @@ check_tv_specs(specs, expected_features = NULL)
 
 \item{id}{The id to use. Default is "pat_id"}
 
-\item{n_cores}{Number of cores to use}
+\item{n_cores}{Number of cores to use. If slurm is being used, it checks the \code{SLURM_CPUS_PER_TASK} variable.
+Else it defaults to 1, for no parallelization.}
 
 \item{expected_ids}{A vector of expected ids based on the data.}
 
