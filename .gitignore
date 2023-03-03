@@ -2,3 +2,7 @@
 .RData
 .Rproj.user
 inst/doc
+renv
+renv.lock
+.Renviron
+.Rprofile
