@@ -196,7 +196,7 @@ check_tv_specs <- function(specs, expected_features = NULL) {
   }
   if(any(specs$lookback_end < specs$lookback_start, na.rm = TRUE)) stop("Some lookback_end's are smaller than lookback_start's")
   if("aggregation" %nin% names(specs)) stop("Please specify an aggregation column in 'specs'")
-  specs$aggregation <- c(
+  specs_map <- c(
     count = "count",
     n = "count",
     `last value` = "lvcf",
@@ -211,7 +211,11 @@ check_tv_specs <- function(specs, expected_features = NULL) {
     median = "median",
     sum = "sum",
     event = "event"
-  )[specs$aggregation]
+  )
+
+  bad <- setdiff(specs$aggregation, names(specs_map))
+  if(length(bad)) stop("Some aggregations you supplied aren't supported: ", paste0(bad, collapse = ", "))
+  specs$aggregation <- specs_map[specs$aggregation]
 
   if("use_for_grid" %nin% names(specs)) {
     message("Using all features to construct the grid...\n")

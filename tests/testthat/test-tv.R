@@ -138,3 +138,16 @@ test_that("overlaps are detected", {
   )
 
 })
+
+
+
+
+
+test_that("NA aggregations are detected", {
+  expect_error(
+    time_varying(x, mutate(specs, aggregation = c("lvcf", NA)), exposure, time_units = "days", id = "id"),
+    "Some aggregations you supplied aren't supported: NA"
+  )
+
+})
+
