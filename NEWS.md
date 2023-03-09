@@ -1,3 +1,9 @@
+# tv v1.6.0
+
+- Aggregations are now checked to make sure they exist. This includes, in particular, when the aggregation is `NA`.
+
+- Removed a few imports from the DESCRIPTION that weren't being used.
+
 # tv v1.5.0
 
 - Changed the default number of cores to check if `"SLURM_CPUS_PER_TASK"` is defined.
