@@ -1,3 +1,7 @@
+# tv v1.6.1
+
+- Added `multiple = 'all'` to one `dplyr::inner_join()` and one `dplyr::left_join()`.
+
 # tv v1.6.0
 
 - Aggregations are now checked to make sure they exist. This includes, in particular, when the aggregation is `NA`.
