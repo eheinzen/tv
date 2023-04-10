@@ -42,9 +42,9 @@ time_varying <- function(x, specs, exposure, ...,
 
   grid <- x %>%
     dplyr::filter(.data$feature %in% specs$feature[specs$use_for_grid]) %>%
-    dplyr::bind_rows(dplyr::mutate(dplyr::select(exposure, .data[[id]], datetime = .data$exposure_start), feature = "exposure_start")) %>%
+    dplyr::bind_rows(dplyr::mutate(dplyr::select(exposure, dplyr::all_of(id), datetime = "exposure_start"), feature = "exposure_start")) %>%
     dplyr::distinct(.data[[id]], row_start = .data$datetime) %>%  # could use unique here, but distinct() is faster
-    dplyr::left_join(x = exposure, by = id, multiple = "all") %>%
+    dplyr::left_join(x = exposure, by = id, relationship = "many-to-many") %>%
     dplyr::filter(.data$exposure_start <= .data$row_start, .data$row_start < .data$exposure_stop) %>%
     dplyr::arrange(.data[[id]], .data$row_start) %>%
     dplyr::group_by(.data[[id]]) %>%
@@ -165,7 +165,7 @@ check_tv_exposure <- function(x, expected_ids, time_units, id, ..., check_overla
 
   if(check_overlap) {
     y <- dplyr::mutate(x, .exposure.row = dplyr::row_number())
-    z <- dplyr::inner_join(y, y, by = id, multiple = "all") %>%
+    z <- dplyr::inner_join(y, y, by = id, relationship = "many-to-many") %>%
       dplyr::filter(
         .data$.exposure.row.x < .data$.exposure.row.y,
         .data$exposure_start.y < .data$exposure_stop.x,

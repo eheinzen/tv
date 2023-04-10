@@ -1,6 +1,8 @@
-# tv v1.6.2
+# tv v1.7.0
 
 - Added `grid.only=` argument to `time_varying()`.
+
+- Thank you, `dplyr` for changing your minds. Enforce `dplyr (>= 1.1.1)`.
 
 # tv v1.6.1
 
