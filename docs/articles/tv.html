@@ -19,6 +19,8 @@
 <![endif]-->
 </head>
 <body data-spy="scroll" data-target="#toc">
+    
+
     <div class="container template-article">
       <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
   <div class="container">
@@ -31,18 +33,12 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">tv</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="Released version">1.5.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.7.0</span>
       </span>
     </div>
 
     <div id="navbar" class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
-<li>
-  <a href="../index.html">
-    <span class="fas fa-home fa-lg"></span>
-     
-  </a>
-</li>
 <li>
   <a href="../articles/tv.html">Get started</a>
 </li>
@@ -63,7 +59,7 @@
 
       
 
-      </header><script src="tv_files/header-attrs-2.11/header-attrs.js"></script><div class="row">
+      </header><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Time Varying</h1>
@@ -76,135 +72,234 @@
 
     
     
-<div id="an-example" class="section level1">
-<h1 class="hasAnchor">
-<a href="#an-example" class="anchor"></a>An example</h1>
-<p>Another example of how to use time-varying. Let’s say we want to break every 6 hours. Just add that as a feature. Here we give it a count with infinite lookback, to count the 6-hour period we’re in. We also want to include the endpoint, which we encode with aggregation “event”.</p>
+<div class="section level2">
+<h2 id="what-exactly-does-tvtime_varying-do">What exactly does <code>tv::time_varying()</code> do?<a class="anchor" aria-label="anchor" href="#what-exactly-does-tvtime_varying-do"></a>
+</h2>
+<p>Given data X, specs, and exposures</p>
+<ul>
+<li>
+<p>For every patient or row e in the exposures:</p>
+<ul>
+<li><p>Let X = filter the data X to current patient</p></li>
+<li>
+<p>construct the “grid”:</p>
+<ul>
+<li><p>Let f = the features from specs with
+<code>use_for_grid=TRUE</code></p></li>
+<li><p>Let grid_times = the unique datetimes in X with features in f and
+datetime between e$exposure_start and e$exposure_stop</p></li>
+</ul>
+</li>
+<li><p>The grid is now a one-row-per-break dataset, with the first break
+at e$exposure_start and the last break before e$exposure_end</p></li>
+<li>
+<p>for grid period g in grid:</p>
+<ul>
+<li>
+<p>for row s in specs:</p>
+<ul>
+<li><p>Let xx = filter data X to X$feature == s$feature and X$datetime
+in the interval (g$row_start - s$lookback_end, g$row_start -
+s$lookback_start)</p></li>
+<li><p>perform the aggregation s$aggregation on xx</p></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section level2">
+<h2 id="faq">FAQ<a class="anchor" aria-label="anchor" href="#faq"></a>
+</h2>
+<div class="section level3">
+<h3 id="does-tv-really-loop-over-every-single-feature-for-every-row-in-the-grid-independently">1. Does <code>tv</code> really loop over every single feature for
+every row in the grid independently?<a class="anchor" aria-label="anchor" href="#does-tv-really-loop-over-every-single-feature-for-every-row-in-the-grid-independently"></a>
+</h3>
+<p>Yes. This is a lot of looping and a good reason to use more than one
+core.</p>
+</div>
+<div class="section level3">
+<h3 id="does-tv-require-any-exposure-history-to-get-the-counts-or-time-since-right">2. Does <code>tv</code> require any exposure history to get the
+counts or time-since right?<a class="anchor" aria-label="anchor" href="#does-tv-require-any-exposure-history-to-get-the-counts-or-time-since-right"></a>
+</h3>
+<p>No. Each row is considered independently.</p>
+</div>
+<div class="section level3">
+<h3 id="the-lookback-in-the-specs-is-relative-to-what-point-in-time">3. The lookback in the specs is relative to what point in time?<a class="anchor" aria-label="anchor" href="#the-lookback-in-the-specs-is-relative-to-what-point-in-time"></a>
+</h3>
+<p>Usually the current grid row start time.</p>
+</div>
+<div class="section level3">
+<h3 id="can-i-get-the-grid-returned-to-me-so-i-can-see-what-its-doing">4. Can I get the grid returned to me so I can see what it’s
+doing?<a class="anchor" aria-label="anchor" href="#can-i-get-the-grid-returned-to-me-so-i-can-see-what-its-doing"></a>
+</h3>
+<p>As of version <code>1.7.0</code> you can; use
+<code>tv::time_varying(grid.only = TRUE)</code>.</p>
+</div>
+<div class="section level3">
+<h3 id="why-is-my-tv-on-prospective-patients-really-slow">5. Why is my <code>tv</code> on prospective patients really
+slow?<a class="anchor" aria-label="anchor" href="#why-is-my-tv-on-prospective-patients-really-slow"></a>
+</h3>
+<p>Probably you misunderstand the exposure dataset. You really only want
+the current exposure in the grid with no other breakpoints, so set your
+exposure start to (e.g.) the current time and the exposure end to (e.g.)
+the current time plus one second.</p>
+</div>
+</div>
+<div class="section level2">
+<h2 id="an-example">An example<a class="anchor" aria-label="anchor" href="#an-example"></a>
+</h2>
+<p>Another example of how to use time-varying. Let’s say we want to
+break every 6 hours. Just add that as a feature. Here we give it a count
+with infinite lookback, to count the 6-hour period we’re in. We also
+want to include the endpoint, which we encode with aggregation
+“event”.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va">tv</span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/">tibble</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org">dplyr</a></span><span class="op">)</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Attaching package: 'dplyr'</span>
-<span class="co">#&gt; The following objects are masked from 'package:stats':</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;     filter, lag</span>
-<span class="co">#&gt; The following objects are masked from 'package:base':</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;     intersect, setdiff, setequal, union</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="va"><a href="https://lubridate.tidyverse.org">lubridate</a></span><span class="op">)</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt; Attaching package: 'lubridate'</span>
-<span class="co">#&gt; The following objects are masked from 'package:base':</span>
-<span class="co">#&gt; </span>
-<span class="co">#&gt;     date, intersect, setdiff, union</span>
-<span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tribble.html">tribble</a></span><span class="op">(</span>
-  <span class="op">~</span> <span class="va">pat_id</span>, <span class="op">~</span> <span class="va">feature</span>, <span class="op">~</span> <span class="va">datetime</span>, <span class="op">~</span> <span class="va">value</span>,
-  <span class="fl">1</span>, <span class="st">"lactate"</span>, <span class="st">"2021-12-31 23:00:00"</span>, <span class="fl">9</span>,
-  <span class="fl">1</span>, <span class="st">"lactate"</span>, <span class="st">"2022-01-01 03:41:00"</span>, <span class="fl">10</span>,
-  <span class="fl">1</span>, <span class="st">"lactate"</span>, <span class="st">"2022-01-01 07:00:00"</span>, <span class="fl">11</span>,
-  <span class="fl">1</span>, <span class="st">"blood pressure"</span>, <span class="st">"2022-01-01 02:00:00"</span>, <span class="fl">120</span>,
-  <span class="fl">1</span>, <span class="st">"blood pressure"</span>, <span class="st">"2022-01-01 04:00:00"</span>, <span class="fl">115</span>,
-  <span class="fl">1</span>, <span class="st">"blood pressure"</span>, <span class="st">"2022-01-01 06:00:00"</span>, <span class="fl">118</span>,
-  <span class="fl">1</span>, <span class="st">"6-hour"</span>, <span class="st">"2022-01-01 00:00:00"</span>, <span class="cn">NA_real_</span>,
-  <span class="fl">1</span>, <span class="st">"6-hour"</span>, <span class="st">"2022-01-01 06:00:00"</span>, <span class="cn">NA_real_</span>,
-  <span class="fl">1</span>, <span class="st">"6-hour"</span>, <span class="st">"2022-01-01 12:00:00"</span>, <span class="cn">NA_real_</span>,
-  <span class="fl">1</span>, <span class="st">"6-hour"</span>, <span class="st">"2022-01-01 18:00:00"</span>, <span class="cn">NA_real_</span>,
-  <span class="fl">1</span>, <span class="st">"event"</span>, <span class="st">"2022-01-01 08:00:00"</span>, <span class="cn">NA_real_</span>,
-  <span class="fl">1</span>, <span class="st">"event"</span>, <span class="st">"2022-01-01 13:00:00"</span>, <span class="cn">NA_real_</span>
-<span class="op">)</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>datetime <span class="op">=</span> <span class="fu"><a href="https://lubridate.tidyverse.org/reference/as_date.html">as_datetime</a></span><span class="op">(</span><span class="va">datetime</span><span class="op">)</span><span class="op">)</span>
-
-<span class="va">specs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tribble.html">tribble</a></span><span class="op">(</span>
-  <span class="op">~</span> <span class="va">feature</span>, <span class="op">~</span> <span class="va">use_for_grid</span>, <span class="op">~</span> <span class="va">lookback_start</span>, <span class="op">~</span> <span class="va">lookback_end</span>, <span class="op">~</span> <span class="va">aggregation</span>,
-  <span class="st">"lactate"</span>, <span class="cn">TRUE</span>, <span class="fl">0</span>, <span class="cn">Inf</span>, <span class="st">"ts"</span>,
-  <span class="st">"lactate"</span>, <span class="cn">TRUE</span>, <span class="fl">0</span>, <span class="cn">Inf</span>, <span class="st">"lvcf"</span>,
-  <span class="st">"blood pressure"</span>, <span class="cn">FALSE</span>, <span class="fl">0</span>, <span class="fl">7200</span>, <span class="st">"ts"</span>, <span class="co"># two hours</span>
-  <span class="st">"blood pressure"</span>, <span class="cn">FALSE</span>, <span class="fl">0</span>, <span class="fl">7200</span>, <span class="st">"lvcf"</span>, <span class="co"># two hours</span>
-  <span class="st">"6-hour"</span>, <span class="cn">TRUE</span>, <span class="fl">0</span>, <span class="cn">Inf</span>, <span class="st">"n"</span>,
-  <span class="st">"event"</span>, <span class="cn">TRUE</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="st">"event"</span>
-<span class="op">)</span>
-
-<span class="va">exposure</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html">tibble</a></span><span class="op">(</span>
-  pat_id <span class="op">=</span> <span class="fl">1</span>,
-  encounter <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, <span class="co"># optional id</span>
-  exposure_start <span class="op">=</span> <span class="fu"><a href="https://lubridate.tidyverse.org/reference/as_date.html">as_datetime</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"2022-01-01 00:00:00"</span>, <span class="st">"2022-01-01 08:00:00"</span><span class="op">)</span><span class="op">)</span>,
-  exposure_stop <span class="op">=</span> <span class="fu"><a href="https://lubridate.tidyverse.org/reference/as_date.html">as_datetime</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="st">"2022-01-01 08:00:00"</span>, <span class="st">"2022-01-01 13:00:00"</span><span class="op">)</span><span class="op">)</span>,
-<span class="op">)</span>
-
-<span class="fu"><a href="../reference/tv.html">time_varying</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">specs</span>, exposure <span class="op">=</span> <span class="va">exposure</span>, time_units <span class="op">=</span> <span class="st">"seconds"</span>, n_cores <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="va">pat_id</span>, <span class="va">row_start</span><span class="op">)</span>
-<span class="co">#&gt;   pat_id encounter      exposure_start       exposure_stop           row_start</span>
-<span class="co">#&gt; 1      1         1 2022-01-01 00:00:00 2022-01-01 08:00:00 2022-01-01 00:00:00</span>
-<span class="co">#&gt; 2      1         1 2022-01-01 00:00:00 2022-01-01 08:00:00 2022-01-01 03:41:00</span>
-<span class="co">#&gt; 3      1         1 2022-01-01 00:00:00 2022-01-01 08:00:00 2022-01-01 06:00:00</span>
-<span class="co">#&gt; 4      1         1 2022-01-01 00:00:00 2022-01-01 08:00:00 2022-01-01 07:00:00</span>
-<span class="co">#&gt; 5      1         2 2022-01-01 08:00:00 2022-01-01 13:00:00 2022-01-01 08:00:00</span>
-<span class="co">#&gt; 6      1         2 2022-01-01 08:00:00 2022-01-01 13:00:00 2022-01-01 12:00:00</span>
-<span class="co">#&gt;              row_stop lactate_ts lactate_lvcf blood pressure_ts</span>
-<span class="co">#&gt; 1 2022-01-01 03:41:00       3600            9                NA</span>
-<span class="co">#&gt; 2 2022-01-01 06:00:00          0           10              6060</span>
-<span class="co">#&gt; 3 2022-01-01 07:00:00       8340           10                 0</span>
-<span class="co">#&gt; 4 2022-01-01 08:00:00          0           11              3600</span>
-<span class="co">#&gt; 5 2022-01-01 12:00:00       3600           11              7200</span>
-<span class="co">#&gt; 6 2022-01-01 13:00:00      18000           11                NA</span>
-<span class="co">#&gt;   blood pressure_lvcf 6-hour_count event_event</span>
-<span class="co">#&gt; 1                  NA            1           0</span>
-<span class="co">#&gt; 2                 120            1           0</span>
-<span class="co">#&gt; 3                 118            2           0</span>
-<span class="co">#&gt; 4                 118            2           1</span>
-<span class="co">#&gt; 5                 118            2           0</span>
-<span class="co">#&gt; 6                  NA            3           1</span></code></pre></div>
-<p>Note that the lactate lab from 2021 does not contribute to a new row because it is not inside the exposure window. Note also that the lookback is ignored for aggregation of type “event”.</p>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va">tv</span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://tibble.tidyverse.org/" class="external-link">tibble</a></span><span class="op">)</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://dplyr.tidyverse.org" class="external-link">dplyr</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Attaching package: 'dplyr'</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:stats':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     filter, lag</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     intersect, setdiff, setequal, union</span></span>
+<span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://lubridate.tidyverse.org" class="external-link">lubridate</a></span><span class="op">)</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; Attaching package: 'lubridate'</span></span>
+<span><span class="co">#&gt; The following objects are masked from 'package:base':</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt;     date, intersect, setdiff, union</span></span>
+<span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tribble.html" class="external-link">tribble</a></span><span class="op">(</span></span>
+<span>  <span class="op">~</span> <span class="va">pat_id</span>, <span class="op">~</span> <span class="va">feature</span>, <span class="op">~</span> <span class="va">datetime</span>, <span class="op">~</span> <span class="va">value</span>,</span>
+<span>  <span class="fl">1</span>, <span class="st">"lactate"</span>, <span class="st">"2021-12-31 23:00:00"</span>, <span class="fl">9</span>,</span>
+<span>  <span class="fl">1</span>, <span class="st">"lactate"</span>, <span class="st">"2022-01-01 03:41:00"</span>, <span class="fl">10</span>,</span>
+<span>  <span class="fl">1</span>, <span class="st">"lactate"</span>, <span class="st">"2022-01-01 07:00:00"</span>, <span class="fl">11</span>,</span>
+<span>  <span class="fl">1</span>, <span class="st">"blood pressure"</span>, <span class="st">"2022-01-01 02:00:00"</span>, <span class="fl">120</span>,</span>
+<span>  <span class="fl">1</span>, <span class="st">"blood pressure"</span>, <span class="st">"2022-01-01 04:00:00"</span>, <span class="fl">115</span>,</span>
+<span>  <span class="fl">1</span>, <span class="st">"blood pressure"</span>, <span class="st">"2022-01-01 06:00:00"</span>, <span class="fl">118</span>,</span>
+<span>  <span class="fl">1</span>, <span class="st">"6-hour"</span>, <span class="st">"2022-01-01 00:00:00"</span>, <span class="cn">NA_real_</span>,</span>
+<span>  <span class="fl">1</span>, <span class="st">"6-hour"</span>, <span class="st">"2022-01-01 06:00:00"</span>, <span class="cn">NA_real_</span>,</span>
+<span>  <span class="fl">1</span>, <span class="st">"6-hour"</span>, <span class="st">"2022-01-01 12:00:00"</span>, <span class="cn">NA_real_</span>,</span>
+<span>  <span class="fl">1</span>, <span class="st">"6-hour"</span>, <span class="st">"2022-01-01 18:00:00"</span>, <span class="cn">NA_real_</span>,</span>
+<span>  <span class="fl">1</span>, <span class="st">"event"</span>, <span class="st">"2022-01-01 08:00:00"</span>, <span class="cn">NA_real_</span>,</span>
+<span>  <span class="fl">1</span>, <span class="st">"event"</span>, <span class="st">"2022-01-01 13:00:00"</span>, <span class="cn">NA_real_</span></span>
+<span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span>datetime <span class="op">=</span> <span class="fu"><a href="https://lubridate.tidyverse.org/reference/as_date.html" class="external-link">as_datetime</a></span><span class="op">(</span><span class="va">datetime</span><span class="op">)</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">specs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tribble.html" class="external-link">tribble</a></span><span class="op">(</span></span>
+<span>  <span class="op">~</span> <span class="va">feature</span>, <span class="op">~</span> <span class="va">use_for_grid</span>, <span class="op">~</span> <span class="va">lookback_start</span>, <span class="op">~</span> <span class="va">lookback_end</span>, <span class="op">~</span> <span class="va">aggregation</span>,</span>
+<span>  <span class="st">"lactate"</span>, <span class="cn">TRUE</span>, <span class="fl">0</span>, <span class="cn">Inf</span>, <span class="st">"ts"</span>,</span>
+<span>  <span class="st">"lactate"</span>, <span class="cn">TRUE</span>, <span class="fl">0</span>, <span class="cn">Inf</span>, <span class="st">"lvcf"</span>,</span>
+<span>  <span class="st">"blood pressure"</span>, <span class="cn">FALSE</span>, <span class="fl">0</span>, <span class="fl">7200</span>, <span class="st">"ts"</span>, <span class="co"># two hours</span></span>
+<span>  <span class="st">"blood pressure"</span>, <span class="cn">FALSE</span>, <span class="fl">0</span>, <span class="fl">7200</span>, <span class="st">"lvcf"</span>, <span class="co"># two hours</span></span>
+<span>  <span class="st">"6-hour"</span>, <span class="cn">TRUE</span>, <span class="fl">0</span>, <span class="cn">Inf</span>, <span class="st">"n"</span>,</span>
+<span>  <span class="st">"event"</span>, <span class="cn">TRUE</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="st">"event"</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">exposure</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://tibble.tidyverse.org/reference/tibble.html" class="external-link">tibble</a></span><span class="op">(</span></span>
+<span>  pat_id <span class="op">=</span> <span class="fl">1</span>,</span>
+<span>  encounter <span class="op">=</span> <span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, <span class="co"># optional id</span></span>
+<span>  exposure_start <span class="op">=</span> <span class="fu"><a href="https://lubridate.tidyverse.org/reference/as_date.html" class="external-link">as_datetime</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2022-01-01 00:00:00"</span>, <span class="st">"2022-01-01 08:00:00"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  exposure_stop <span class="op">=</span> <span class="fu"><a href="https://lubridate.tidyverse.org/reference/as_date.html" class="external-link">as_datetime</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"2022-01-01 08:00:00"</span>, <span class="st">"2022-01-01 13:00:00"</span><span class="op">)</span><span class="op">)</span>,</span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/tv.html">time_varying</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">specs</span>, exposure <span class="op">=</span> <span class="va">exposure</span>, time_units <span class="op">=</span> <span class="st">"seconds"</span>, n_cores <span class="op">=</span> <span class="fl">1</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span></span>
+<span>  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">pat_id</span>, <span class="va">row_start</span><span class="op">)</span></span>
+<span><span class="co">#&gt;   pat_id encounter      exposure_start       exposure_stop           row_start</span></span>
+<span><span class="co">#&gt; 1      1         1 2022-01-01 00:00:00 2022-01-01 08:00:00 2022-01-01 00:00:00</span></span>
+<span><span class="co">#&gt; 2      1         1 2022-01-01 00:00:00 2022-01-01 08:00:00 2022-01-01 03:41:00</span></span>
+<span><span class="co">#&gt; 3      1         1 2022-01-01 00:00:00 2022-01-01 08:00:00 2022-01-01 06:00:00</span></span>
+<span><span class="co">#&gt; 4      1         1 2022-01-01 00:00:00 2022-01-01 08:00:00 2022-01-01 07:00:00</span></span>
+<span><span class="co">#&gt; 5      1         2 2022-01-01 08:00:00 2022-01-01 13:00:00 2022-01-01 08:00:00</span></span>
+<span><span class="co">#&gt; 6      1         2 2022-01-01 08:00:00 2022-01-01 13:00:00 2022-01-01 12:00:00</span></span>
+<span><span class="co">#&gt;              row_stop lactate_ts lactate_lvcf blood pressure_ts</span></span>
+<span><span class="co">#&gt; 1 2022-01-01 03:41:00       3600            9                NA</span></span>
+<span><span class="co">#&gt; 2 2022-01-01 06:00:00          0           10              6060</span></span>
+<span><span class="co">#&gt; 3 2022-01-01 07:00:00       8340           10                 0</span></span>
+<span><span class="co">#&gt; 4 2022-01-01 08:00:00          0           11              3600</span></span>
+<span><span class="co">#&gt; 5 2022-01-01 12:00:00       3600           11              7200</span></span>
+<span><span class="co">#&gt; 6 2022-01-01 13:00:00      18000           11                NA</span></span>
+<span><span class="co">#&gt;   blood pressure_lvcf 6-hour_count event_event</span></span>
+<span><span class="co">#&gt; 1                  NA            1           0</span></span>
+<span><span class="co">#&gt; 2                 120            1           0</span></span>
+<span><span class="co">#&gt; 3                 118            2           0</span></span>
+<span><span class="co">#&gt; 4                 118            2           1</span></span>
+<span><span class="co">#&gt; 5                 118            2           0</span></span>
+<span><span class="co">#&gt; 6                  NA            3           1</span></span></code></pre></div>
+<p>Note that the lactate lab from 2021 does not contribute to a new row
+because it is not inside the exposure window. Note also that the
+lookback is ignored for aggregation of type “event”.</p>
 </div>
-<div id="overclocking-the-time_varying-function" class="section level1">
-<h1 class="hasAnchor">
-<a href="#overclocking-the-time_varying-function" class="anchor"></a>Overclocking the <code>time_varying()</code> function</h1>
-<div id="multiple-exposures-per-person" class="section level2">
-<h2 class="hasAnchor">
-<a href="#multiple-exposures-per-person" class="anchor"></a>Multiple exposures per person</h2>
-<p>If there are multiple encounters per person, you can just add another row to the exposure data, and tag it with another id column which gets carried forward by <code><a href="../reference/tv.html">time_varying()</a></code>.</p>
+<div class="section level2">
+<h2 id="overclocking-the-time_varying-function">Overclocking the <code>time_varying()</code> function<a class="anchor" aria-label="anchor" href="#overclocking-the-time_varying-function"></a>
+</h2>
+<div class="section level3">
+<h3 id="what-if-a-variable-doesnt-change-over-the-exposure">What if a variable doesn’t change over the exposure?<a class="anchor" aria-label="anchor" href="#what-if-a-variable-doesnt-change-over-the-exposure"></a>
+</h3>
+<p>Run two tv’s and merge the results: one for static variables and one
+for dynamic variables.</p>
 </div>
-<div id="only-look-back-to-the-beginning-of-the-exposure-instead-of-a-fixed-lookback" class="section level2">
-<h2 class="hasAnchor">
-<a href="#only-look-back-to-the-beginning-of-the-exposure-instead-of-a-fixed-lookback" class="anchor"></a>Only look back to the beginning of the exposure instead of a fixed lookback</h2>
+<div class="section level3">
+<h3 id="multiple-exposures-per-person">Multiple exposures per person<a class="anchor" aria-label="anchor" href="#multiple-exposures-per-person"></a>
+</h3>
+<p>If there are multiple encounters per person, you can just add another
+row to the exposure data, and tag it with another id column which gets
+carried forward by <code><a href="../reference/tv.html">time_varying()</a></code>.</p>
+</div>
+<div class="section level3">
+<h3 id="only-look-back-to-the-beginning-of-the-exposure-instead-of-a-fixed-lookback">Only look back to the beginning of the exposure instead of a fixed
+lookback<a class="anchor" aria-label="anchor" href="#only-look-back-to-the-beginning-of-the-exposure-instead-of-a-fixed-lookback"></a>
+</h3>
 <p>Simply pass the special value NA in the “lookback_end” column.</p>
 </div>
-<div id="only-look-at-things-from-before-the-exposure-instead-of-a-fixed-lookback" class="section level2">
-<h2 class="hasAnchor">
-<a href="#only-look-at-things-from-before-the-exposure-instead-of-a-fixed-lookback" class="anchor"></a>Only look at things from before the exposure instead of a fixed lookback</h2>
-<p>Simply pass the special value NA in the “lookback_start” column. You’ll probably also want something like “lookback_end = Inf”.</p>
+<div class="section level3">
+<h3 id="only-look-at-things-from-before-the-exposure-instead-of-a-fixed-lookback">Only look at things from before the exposure instead of a fixed
+lookback<a class="anchor" aria-label="anchor" href="#only-look-at-things-from-before-the-exposure-instead-of-a-fixed-lookback"></a>
+</h3>
+<p>Simply pass the special value NA in the “lookback_start” column.
+You’ll probably also want something like “lookback_end = Inf”.</p>
 </div>
-<div id="only-break-every-hour" class="section level2">
-<h2 class="hasAnchor">
-<a href="#only-break-every-hour" class="anchor"></a>Only break every hour</h2>
-<p>Set <code>use_for_grid=FALSE</code> for everything except an “hourly” feature. Then calculate every hour that the patient is at risk; set “feature” to “hourly”, set “datetime” to the time stamp, and set “value” to <code><a href="https://lubridate.tidyverse.org/reference/hour.html">hour(datetime)</a></code>.</p>
+<div class="section level3">
+<h3 id="only-break-every-hour">Only break every hour<a class="anchor" aria-label="anchor" href="#only-break-every-hour"></a>
+</h3>
+<p>Set <code>use_for_grid=FALSE</code> for everything except an “hourly”
+feature. Then calculate every hour that the patient is at risk; set
+“feature” to “hourly”, set “datetime” to the time stamp, and set “value”
+to <code>hour(datetime)</code>.</p>
 </div>
-<div id="create-an-indicator-for-if-a-situation-applies" class="section level2">
-<h2 class="hasAnchor">
-<a href="#create-an-indicator-for-if-a-situation-applies" class="anchor"></a>Create an indicator for if a situation applies</h2>
-<p>Start with a dataset of start time and end time. IMPORTANT: be sure no intervals overlap; if they do, the next section would be better suited for you. Otherwise, the pseudocode below should do the trick:</p>
+<div class="section level3">
+<h3 id="create-an-indicator-for-if-a-situation-applies">Create an indicator for if a situation applies<a class="anchor" aria-label="anchor" href="#create-an-indicator-for-if-a-situation-applies"></a>
+</h3>
+<p>Start with a dataset of start time and end time. IMPORTANT: be sure
+no intervals overlap; if they do, the next section would be better
+suited for you. Otherwise, the pseudocode below should do the trick:</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">data</span> <span class="op">%&gt;%</span> 
-  <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html">pivot_longer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">start_time</span>, <span class="va">end_time</span><span class="op">)</span>, names_to <span class="op">=</span> <span class="st">"which_time"</span>, values_to <span class="op">=</span> <span class="st">"datetime"</span><span class="op">)</span> <span class="op">%&gt;%</span> 
-  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>
-    value <span class="op">=</span> <span class="op">+</span><span class="op">(</span><span class="va">which_time</span> <span class="op">==</span> <span class="st">"start_time"</span><span class="op">)</span>
-  <span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html" class="external-link">pivot_longer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">start_time</span>, <span class="va">end_time</span><span class="op">)</span>, names_to <span class="op">=</span> <span class="st">"which_time"</span>, values_to <span class="op">=</span> <span class="st">"datetime"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    value <span class="op">=</span> <span class="op">+</span><span class="op">(</span><span class="va">which_time</span> <span class="op">==</span> <span class="st">"start_time"</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span></code></pre></div>
 <p>Then make the specs a “lvcf” with infinite lookback.</p>
 </div>
-<div id="create-a-count-of-how-many-times-a-situation-applies" class="section level2">
-<h2 class="hasAnchor">
-<a href="#create-a-count-of-how-many-times-a-situation-applies" class="anchor"></a>Create a count of how many times a situation applies</h2>
-<p>Start with a dataset of start time and end time. The pseudocode below should do the trick:</p>
+<div class="section level3">
+<h3 id="create-a-count-of-how-many-times-a-situation-applies">Create a count of how many times a situation applies<a class="anchor" aria-label="anchor" href="#create-a-count-of-how-many-times-a-situation-applies"></a>
+</h3>
+<p>Start with a dataset of start time and end time. The pseudocode below
+should do the trick:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">data</span> <span class="op">%&gt;%</span> 
-  <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html">pivot_longer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span><span class="va">start_time</span>, <span class="va">end_time</span><span class="op">)</span>, names_to <span class="op">=</span> <span class="st">"which_time"</span>, values_to <span class="op">=</span> <span class="st">"datetime"</span><span class="op">)</span> <span class="op">%&gt;%</span> 
-  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html">arrange</a></span><span class="op">(</span><span class="va">pat_id</span>, <span class="va">datetime</span><span class="op">)</span> <span class="op">%&gt;%</span> 
-  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">pat_id</span><span class="op">)</span> <span class="op">%&gt;%</span> 
-  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>
-    value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cumsum.html">cumsum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ifelse.html">ifelse</a></span><span class="op">(</span><span class="va">which_time</span> <span class="op">==</span> <span class="st">"start_time"</span>, <span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span>
-  <span class="op">)</span> <span class="op">%&gt;%</span> 
-  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">ungroup</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<code class="sourceCode R"><span><span class="va">data</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu">tidyr</span><span class="fu">::</span><span class="fu"><a href="https://tidyr.tidyverse.org/reference/pivot_longer.html" class="external-link">pivot_longer</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">start_time</span>, <span class="va">end_time</span><span class="op">)</span>, names_to <span class="op">=</span> <span class="st">"which_time"</span>, values_to <span class="op">=</span> <span class="st">"datetime"</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/arrange.html" class="external-link">arrange</a></span><span class="op">(</span><span class="va">pat_id</span>, <span class="va">datetime</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">pat_id</span><span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
+<span>    value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cumsum.html" class="external-link">cumsum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">which_time</span> <span class="op">==</span> <span class="st">"start_time"</span>, <span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
 <p>Then make the specs a “lvcf” with infinite lookback.</p>
 </div>
 </div>
@@ -221,11 +316,13 @@
 
 
       <footer><div class="copyright">
-  <p>Developed by Ethan Heinzen.</p>
+  <p></p>
+<p>Developed by Ethan Heinzen.</p>
 </div>
 
 <div class="pkgdown">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/">pkgdown</a> 1.6.1.</p>
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.0.7.</p>
 </div>
 
       </footer>
@@ -233,6 +330,8 @@
 
   
 
+
+  
 
   </body>
 </html>

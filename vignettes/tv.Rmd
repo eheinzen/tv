@@ -58,7 +58,7 @@ Usually the current grid row start time.
 
 ## 4. Can I get the grid returned to me so I can see what it's doing?
 
-As of version `1.6.2` you can; use `tv::time_varying(grid.only = TRUE)`.
+As of version `1.7.0` you can; use `tv::time_varying(grid.only = TRUE)`.
 
 ## 5. Why is my `tv` on prospective patients really slow?
 
