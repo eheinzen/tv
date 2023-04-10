@@ -3,6 +3,7 @@
 #' @param x A data.frame with four columns: <id>, "feature", "datetime", "value"
 #' @param specs a data.frame with four columns: "feature", "use_for_grid", "lookback_start", "lookback_end", "aggregation". See details below.
 #' @param exposure a data.frame with (at least) three columns: <id>, "exposure_start", "exposure_stop"
+#' @param grid.only Should just the grid be computed and returned? Useful only for debugging
 #' @param time_units What time units should be used? Seconds or days
 #' @param n_cores Number of cores to use. If slurm is being used, it checks the \code{SLURM_CPUS_PER_TASK} variable.
 #'   Else it defaults to 1, for no parallelization.
@@ -28,7 +29,9 @@ NULL
 
 #' @rdname tv
 #' @export
-time_varying <- function(x, specs, exposure, ..., time_units = c("days", "seconds"), id = "pat_id",
+time_varying <- function(x, specs, exposure, ...,
+                         grid.only = FALSE,
+                         time_units = c("days", "seconds"), id = "pat_id",
                          n_cores = as.numeric(Sys.getenv("SLURM_CPUS_PER_TASK", 1))) {
   opts <- options(warn = 1)
   on.exit(options(opts))
@@ -49,6 +52,8 @@ time_varying <- function(x, specs, exposure, ..., time_units = c("days", "second
       row_stop = pmin(dplyr::lead(.data$row_start, 1), .data$exposure_stop, na.rm = TRUE)
     ) %>%
     dplyr::ungroup()
+
+  if(grid.only) return(grid)
 
   FN <- if(n_cores > 1) parallel::mclapply else lapply
 

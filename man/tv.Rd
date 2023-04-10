@@ -13,6 +13,7 @@ time_varying(
   specs,
   exposure,
   ...,
+  grid.only = FALSE,
   time_units = c("days", "seconds"),
   id = "pat_id",
   n_cores = as.numeric(Sys.getenv("SLURM_CPUS_PER_TASK", 1))
@@ -32,6 +33,8 @@ check_tv_specs(specs, expected_features = NULL)
 \item{exposure}{a data.frame with (at least) three columns: <id>, "exposure_start", "exposure_stop"}
 
 \item{...}{Other arguments. Currently just passes \code{check_overlap}.}
+
+\item{grid.only}{Should just the grid be computed and returned? Useful only for debugging}
 
 \item{time_units}{What time units should be used? Seconds or days}
 

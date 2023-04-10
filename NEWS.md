@@ -1,3 +1,7 @@
+# tv v1.6.2
+
+- Added `grid.only=` argument to `time_varying()`.
+
 # tv v1.6.1
 
 - Added `multiple = 'all'` to one `dplyr::inner_join()` and one `dplyr::left_join()`.
