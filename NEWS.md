@@ -4,6 +4,8 @@
 
 - Thank you, `dplyr` for changing your minds. Enforce `dplyr (>= 1.1.1)`.
 
+- Added a "How does this actually work" section to the vignette.
+
 # tv v1.6.1
 
 - Added `multiple = 'all'` to one `dplyr::inner_join()` and one `dplyr::left_join()`.

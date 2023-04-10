@@ -14,6 +14,60 @@ knitr::opts_chunk$set(
 )
 ```
 
+
+# What exactly does `tv::time_varying()` do?
+
+Given data X, specs, and exposures
+
+- For every patient or row e in the exposures:
+  
+    - Let X = filter the data X to current patient
+    
+    - construct the "grid":
+    
+        - Let f = the features from specs with `use_for_grid=TRUE`
+        
+        - Let grid_times = the unique datetimes in X with features in f and
+          datetime between e\$exposure_start and e\$exposure_stop
+  
+    - The grid is now a one-row-per-break dataset, with the first break at e\$exposure_start
+      and the last break before e$exposure_end
+      
+    - for grid period g in grid:
+    
+        - for row s in specs:
+        
+            - Let xx = filter data X to X\$feature == s\$feature and X\$datetime in the interval 
+              (g\$row_start - s\$lookback_end, g\$row_start - s\$lookback_start)
+              
+            - perform the aggregation s$aggregation on xx
+
+# FAQ
+
+## 1. Does `tv` really loop over every single feature for every row in the grid independently?
+
+Yes. This is a lot of looping and a good reason to use more than one core.
+
+## 2. Does `tv` require any exposure history to get the counts or time-since right?
+
+No. Each row is considered independently.
+
+## 3. The lookback in the specs is relative to what point in time?
+
+Usually the current grid row start time.
+
+## 4. Can I get the grid returned to me so I can see what it's doing?
+
+As of version `1.6.2` you can; use `tv::time_varying(grid.only = TRUE)`.
+
+## 5. Why is my `tv` on prospective patients really slow?
+
+Probably you misunderstand the exposure dataset.
+You really only want the current exposure in the grid with no other breakpoints,
+so set your exposure start to (e.g.) the current time and
+the exposure end to (e.g.) the current time plus one second.
+
+
 # An example
 
 Another example of how to use time-varying. Let's say we want to break every 6 hours. Just add that as a feature. Here we give it a count with infinite lookback, to count the 6-hour period we're in. We also want to include the endpoint, which we encode with aggregation "event".
@@ -66,6 +120,10 @@ Note that the lactate lab from 2021 does not contribute to a new row because it 
 Note also that the lookback is ignored for aggregation of type "event".
 
 # Overclocking the `time_varying()` function
+
+## What if a variable doesn't change over the exposure?
+
+Run two tv's and merge the results: one for static variables and one for dynamic variables.
 
 ## Multiple exposures per person
 
