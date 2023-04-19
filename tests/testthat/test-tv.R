@@ -151,3 +151,30 @@ test_that("NA aggregations are detected", {
 
 })
 
+
+test_that("all-NA values passed to min/max are detected and not warned", {
+  expect_warning(
+    out <- time_varying(
+      data.frame(pat_id = 1, feature = "lab", datetime = as.Date("2022-01-01"), value = NA_real_),
+      specs = data.frame(
+        feature = "lab",
+        use_for_grid = FALSE,
+        lookback_start = 0,
+        lookback_end = 10,
+        aggregation = c("min", "max")
+      ),
+      exposure = data.frame(
+        pat_id = 1,
+        exposure_start = as.Date("2022-01-01"),
+        exposure_stop = as.Date("2022-01-03")
+      )
+    ),
+    NA
+  )
+  expect_equal(
+    out[c("lab_min", "lab_max")],
+    data.frame(lab_min = NA_real_, lab_max = NA_real_)
+  )
+
+})
+

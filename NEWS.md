@@ -1,3 +1,9 @@
+# tv v1.7.1
+
+- Added logic to `tv_min()`, `tv_max()`, et al. to handle cases where there are
+  relevant rows for the feature, but which are all missing. Usually you will want
+  to filter these NA rows out *a priori*, because they're almost never what you want.
+
 # tv v1.7.0
 
 - Added `grid.only=` argument to `time_varying()`.

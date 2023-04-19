@@ -22,38 +22,38 @@ tv_any <- function(x, ...) {
 #' @rdname tv_aggregation
 #' @export
 tv_lvcf <- function(x, ...) {
-  if(nrow(x) > 0) x$value[which.max(x$datetime)] else NA_real_
+  if(nrow(x) == 0) NA_real_ else x$value[which.max(x$datetime)]
 }
 
 
 #' @rdname tv_aggregation
 #' @export
 tv_ts <- function(x, current_time, ...) {
-  if(nrow(x) > 0) current_time - max(x$datetime) else NA_real_
+  if(nrow(x) == 0) NA_real_ else current_time - max(x$datetime)
 }
 
 #' @rdname tv_aggregation
 #' @export
 tv_min <- function(x, ...) {
-  if(nrow(x) > 0) min(x$value, na.rm = TRUE) else NA_real_
+  if(nrow(x) == 0 || all(is.na(x$value))) NA_real_ else min(x$value, na.rm = TRUE)
 }
 
 #' @rdname tv_aggregation
 #' @export
 tv_max <- function(x, ...) {
-  if(nrow(x) > 0) max(x$value, na.rm = TRUE) else NA_real_
+  if(nrow(x) == 0 || all(is.na(x$value))) NA_real_ else max(x$value, na.rm = TRUE)
 }
 
 #' @rdname tv_aggregation
 #' @export
 tv_mean <- function(x, ...) {
-  if(nrow(x) > 0) mean(x$value, na.rm = TRUE) else NA_real_
+  if(nrow(x) == 0 || all(is.na(x$value))) NA_real_ else mean(x$value, na.rm = TRUE)
 }
 
 #' @rdname tv_aggregation
 #' @export
 tv_median <- function(x, ...) {
-  if(nrow(x) > 0) stats::median(x$value, na.rm = TRUE) else NA_real_
+  if(nrow(x) == 0 || all(is.na(x$value))) NA_real_ else stats::median(x$value, na.rm = TRUE)
 }
 
 #' @rdname tv_aggregation
