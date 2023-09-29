@@ -1,13 +1,14 @@
 Package: tv
-Title: Tools for creating time-varying datasets
-Version: 1.7.1
-Date: 2023-04-19
+Title: Tools for Creating Time-Varying Datasets
+Version: 1.7.2
+Date: 2023-09-29
 Authors@R: c(
     person("Ethan", "Heinzen", email = "heinzen.ethan@mayo.edu", role = c("aut", "cre")),
     person("Patrick", "Wilson", role="ctb"),
     person("Brendan", "Broderick", role="ctb")
   )
-Description: Tools for creating time-varying datasets.
+Description: Create a time-varying dataset using features, exposure, and
+    look back specifications.
 Suggests:
     knitr,
     tibble,

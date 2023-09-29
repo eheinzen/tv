@@ -16,9 +16,9 @@
 #' @details
 #'   The defaults for specs are to use everything for the grid creation, and to set \code{lookback_start=0}, with a message in both cases.
 #'   Currently supported aggregation functions include counting ("count" or "n"), last-value-carried forward ("last value" or "lvcf"),
-#'   any/none ("any" or "binary"), time since ("time since" or "ts"), min/max/mean, and the special "event" (for which lookbacks are ignored).
+#'   any/none ("any" or "binary"), time since ("time since" or "ts"), min/max/mean, and the special "event" (for which look backs are ignored).
 #'
-#'   The lookback window begins at \code{row_start - lookback_end} and ends at \code{row_start - lookback_start}. Passing NA to either lookback
+#'   The look back window begins at \code{row_start - lookback_end} and ends at \code{row_start - lookback_start}. Passing NA to either look back
 #'   changes the corresponding window boundary to \code{exposure_start}.
 #' @examples
 #'   data(tv_example)

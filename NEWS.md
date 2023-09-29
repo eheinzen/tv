@@ -1,3 +1,7 @@
+# tv v1.7.2
+
+- Submit to CRAN.
+
 # tv v1.7.1
 
 - Added logic to `tv_min()`, `tv_max()`, et al. to handle cases where there are

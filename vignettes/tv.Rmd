@@ -52,7 +52,7 @@ Yes. This is a lot of looping and a good reason to use more than one core.
 
 No. Each row is considered independently.
 
-## 3. The lookback in the specs is relative to what point in time?
+## 3. The look back in the specs is relative to what point in time?
 
 Usually the current grid row start time.
 
@@ -70,7 +70,7 @@ the exposure end to (e.g.) the current time plus one second.
 
 # An example
 
-Another example of how to use time-varying. Let's say we want to break every 6 hours. Just add that as a feature. Here we give it a count with infinite lookback, to count the 6-hour period we're in. We also want to include the endpoint, which we encode with aggregation "event".
+Another example of how to use time-varying. Let's say we want to break every 6 hours. Just add that as a feature. Here we give it a count with infinite look back, to count the 6-hour period we're in. We also want to include the endpoint, which we encode with aggregation "event".
 
 ```{r}
 library(tv)
@@ -117,7 +117,7 @@ time_varying(data, specs, exposure = exposure, time_units = "seconds", n_cores =
 ```
 
 Note that the lactate lab from 2021 does not contribute to a new row because it is not inside the exposure window.
-Note also that the lookback is ignored for aggregation of type "event".
+Note also that the look back is ignored for aggregation of type "event".
 
 # Overclocking the `time_varying()` function
 
@@ -130,11 +130,11 @@ Run two tv's and merge the results: one for static variables and one for dynamic
 If there are multiple encounters per person, you can just add another row to the exposure data,
 and tag it with another id column which gets carried forward by `time_varying()`.
 
-## Only look back to the beginning of the exposure instead of a fixed lookback
+## Only look back to the beginning of the exposure instead of a fixed look back
 
 Simply pass the special value NA in the "lookback_end" column.
 
-## Only look at things from before the exposure instead of a fixed lookback
+## Only look at things from before the exposure instead of a fixed look back
 
 Simply pass the special value NA in the "lookback_start" column. You'll probably also want something like "lookback_end = Inf".
 
@@ -156,7 +156,7 @@ data %>%
   )
 ```
 
-Then make the specs a "lvcf" with infinite lookback.
+Then make the specs a "lvcf" with infinite look back.
 
 ## Create a count of how many times a situation applies
 
@@ -173,4 +173,4 @@ data %>%
   dplyr::ungroup()
 ```
 
-Then make the specs a "lvcf" with infinite lookback.
+Then make the specs a "lvcf" with infinite look back.
