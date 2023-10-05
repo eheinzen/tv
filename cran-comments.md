@@ -1,6 +1,8 @@
 ## Submission for tv 1.7.3
 
-This is an updated new package submission.
+This is an updated new package submission. In this version, return values
+were added to the documentation. No references were added because there are
+none to add.
 
 ## Test environments
 
