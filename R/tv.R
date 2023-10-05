@@ -13,6 +13,7 @@
 #' @param id The id to use. Default is "pat_id"
 #' @param check_overlap Should overlap be checked among exposure rows? A potentially costly operation,
 #'   so you can opt out of it if you're really sure.
+#' @return A data.frame, with one row per grid value and one column per feature specification (plus grid columns).
 #' @details
 #'   The defaults for specs are to use everything for the grid creation, and to set \code{lookback_start=0}, with a message in both cases.
 #'   Currently supported aggregation functions include counting ("count" or "n"), last-value-carried forward ("last value" or "lvcf"),

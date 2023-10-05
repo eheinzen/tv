@@ -38,6 +38,9 @@ tv_sum(x, ...)
 
 \item{current_time}{The current grid row's time}
 }
+\value{
+A scalar, indicating the corresponding aggregation over \code{x}.
+}
 \description{
 Time-varying aggregation functions
 }

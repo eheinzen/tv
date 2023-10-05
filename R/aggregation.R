@@ -3,6 +3,7 @@
 #' @param x A data.frame with four columns: <id>, "feature", "datetime", "value"
 #' @param current_time The current grid row's time
 #' @param ... Other arguments (not used at this time)
+#' @return A scalar, indicating the corresponding aggregation over \code{x}.
 #' @name tv_aggregation
 NULL
 

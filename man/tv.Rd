@@ -50,6 +50,9 @@ so you can opt out of it if you're really sure.}
 
 \item{expected_features}{A vector of expected features based on the data.}
 }
+\value{
+A data.frame, with one row per grid value and one column per feature specification (plus grid columns).
+}
 \description{
 Create a time-varying dataset
 }

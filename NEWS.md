@@ -1,3 +1,7 @@
+# tv v1.7.3
+
+- Added return values to the documentation and resubmitted to CRAN.
+
 # tv v1.7.2
 
 - Submit to CRAN.
