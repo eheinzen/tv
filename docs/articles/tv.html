@@ -33,7 +33,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">tv</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.7.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
       </span>
     </div>
 
@@ -127,7 +127,8 @@ counts or time-since right?<a class="anchor" aria-label="anchor" href="#does-tv-
 <p>No. Each row is considered independently.</p>
 </div>
 <div class="section level3">
-<h3 id="the-lookback-in-the-specs-is-relative-to-what-point-in-time">3. The lookback in the specs is relative to what point in time?<a class="anchor" aria-label="anchor" href="#the-lookback-in-the-specs-is-relative-to-what-point-in-time"></a>
+<h3 id="the-look-back-in-the-specs-is-relative-to-what-point-in-time">3. The look back in the specs is relative to what point in
+time?<a class="anchor" aria-label="anchor" href="#the-look-back-in-the-specs-is-relative-to-what-point-in-time"></a>
 </h3>
 <p>Usually the current grid row start time.</p>
 </div>
@@ -153,7 +154,7 @@ the current time plus one second.</p>
 </h2>
 <p>Another example of how to use time-varying. Let’s say we want to
 break every 6 hours. Just add that as a feature. Here we give it a count
-with infinite lookback, to count the 6-hour period we’re in. We also
+with infinite look back, to count the 6-hour period we’re in. We also
 want to include the endpoint, which we encode with aggregation
 “event”.</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
@@ -232,8 +233,8 @@ want to include the endpoint, which we encode with aggregation
 <span><span class="co">#&gt; 5                 118            2           0</span></span>
 <span><span class="co">#&gt; 6                  NA            3           1</span></span></code></pre></div>
 <p>Note that the lactate lab from 2021 does not contribute to a new row
-because it is not inside the exposure window. Note also that the
-lookback is ignored for aggregation of type “event”.</p>
+because it is not inside the exposure window. Note also that the look
+back is ignored for aggregation of type “event”.</p>
 </div>
 <div class="section level2">
 <h2 id="overclocking-the-time_varying-function">Overclocking the <code>time_varying()</code> function<a class="anchor" aria-label="anchor" href="#overclocking-the-time_varying-function"></a>
@@ -252,14 +253,14 @@ row to the exposure data, and tag it with another id column which gets
 carried forward by <code><a href="../reference/tv.html">time_varying()</a></code>.</p>
 </div>
 <div class="section level3">
-<h3 id="only-look-back-to-the-beginning-of-the-exposure-instead-of-a-fixed-lookback">Only look back to the beginning of the exposure instead of a fixed
-lookback<a class="anchor" aria-label="anchor" href="#only-look-back-to-the-beginning-of-the-exposure-instead-of-a-fixed-lookback"></a>
+<h3 id="only-look-back-to-the-beginning-of-the-exposure-instead-of-a-fixed-look-back">Only look back to the beginning of the exposure instead of a fixed
+look back<a class="anchor" aria-label="anchor" href="#only-look-back-to-the-beginning-of-the-exposure-instead-of-a-fixed-look-back"></a>
 </h3>
 <p>Simply pass the special value NA in the “lookback_end” column.</p>
 </div>
 <div class="section level3">
-<h3 id="only-look-at-things-from-before-the-exposure-instead-of-a-fixed-lookback">Only look at things from before the exposure instead of a fixed
-lookback<a class="anchor" aria-label="anchor" href="#only-look-at-things-from-before-the-exposure-instead-of-a-fixed-lookback"></a>
+<h3 id="only-look-at-things-from-before-the-exposure-instead-of-a-fixed-look-back">Only look at things from before the exposure instead of a fixed look
+back<a class="anchor" aria-label="anchor" href="#only-look-at-things-from-before-the-exposure-instead-of-a-fixed-look-back"></a>
 </h3>
 <p>Simply pass the special value NA in the “lookback_start” column.
 You’ll probably also want something like “lookback_end = Inf”.</p>
@@ -284,7 +285,7 @@ suited for you. Otherwise, the pseudocode below should do the trick:</p>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html" class="external-link">mutate</a></span><span class="op">(</span></span>
 <span>    value <span class="op">=</span> <span class="op">+</span><span class="op">(</span><span class="va">which_time</span> <span class="op">==</span> <span class="st">"start_time"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
-<p>Then make the specs a “lvcf” with infinite lookback.</p>
+<p>Then make the specs a “lvcf” with infinite look back.</p>
 </div>
 <div class="section level3">
 <h3 id="create-a-count-of-how-many-times-a-situation-applies">Create a count of how many times a situation applies<a class="anchor" aria-label="anchor" href="#create-a-count-of-how-many-times-a-situation-applies"></a>
@@ -300,7 +301,7 @@ should do the trick:</p>
 <span>    value <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/cumsum.html" class="external-link">cumsum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ifelse.html" class="external-link">ifelse</a></span><span class="op">(</span><span class="va">which_time</span> <span class="op">==</span> <span class="st">"start_time"</span>, <span class="fl">1</span>, <span class="op">-</span><span class="fl">1</span><span class="op">)</span><span class="op">)</span></span>
 <span>  <span class="op">)</span> <span class="op"><a href="https://magrittr.tidyverse.org/reference/pipe.html" class="external-link">%&gt;%</a></span> </span>
 <span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">ungroup</a></span><span class="op">(</span><span class="op">)</span></span></code></pre></div>
-<p>Then make the specs a “lvcf” with infinite lookback.</p>
+<p>Then make the specs a “lvcf” with infinite look back.</p>
 </div>
 </div>
   </div>

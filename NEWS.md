@@ -1,3 +1,7 @@
+# tv v2.0.0
+
+- Completely overhauled the internals, for speeds boosts of up to 6x-8x.
+
 # tv v1.7.3
 
 - Added return values to the documentation and resubmitted to CRAN.

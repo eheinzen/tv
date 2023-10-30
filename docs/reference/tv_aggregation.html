@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">tv</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">1.7.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
       </span>
     </div>
 
@@ -50,39 +50,49 @@
     </div>
 
     <div id="ref-usage">
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">tv_count</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">tv_count</span><span class="op">(</span><span class="va">value</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">tv_any</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">tv_any</span><span class="op">(</span><span class="va">value</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">tv_lvcf</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">tv_lvcf</span><span class="op">(</span><span class="va">value</span>, <span class="va">datetime</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">tv_ts</span><span class="op">(</span><span class="va">x</span>, <span class="va">current_time</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">tv_ts</span><span class="op">(</span><span class="va">datetime</span>, <span class="va">current_time</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">tv_min</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">tv_min</span><span class="op">(</span><span class="va">value</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">tv_max</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">tv_max</span><span class="op">(</span><span class="va">value</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">tv_mean</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">tv_mean</span><span class="op">(</span><span class="va">value</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">tv_median</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span>
+<span><span class="fu">tv_median</span><span class="op">(</span><span class="va">value</span>, <span class="va">...</span><span class="op">)</span></span>
 <span></span>
-<span><span class="fu">tv_sum</span><span class="op">(</span><span class="va">x</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
+<span><span class="fu">tv_sum</span><span class="op">(</span><span class="va">value</span>, <span class="va">...</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div id="arguments">
     <h2>Arguments</h2>
-    <dl><dt>x</dt>
-<dd><p>A data.frame with four columns: &lt;id&gt;, "feature", "datetime", "value"</p></dd>
+    <dl><dt>value</dt>
+<dd><p>A vector of values</p></dd>
 
 
 <dt>...</dt>
 <dd><p>Other arguments (not used at this time)</p></dd>
 
 
+<dt>datetime</dt>
+<dd><p>A datetime</p></dd>
+
+
 <dt>current_time</dt>
 <dd><p>The current grid row's time</p></dd>
 
 </dl></div>
+    <div id="value">
+    <h2>Value</h2>
+    
+
+<p>A scalar, indicating the corresponding aggregation over <code>value</code> or <code>datetime</code>.</p>
+    </div>
 
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
