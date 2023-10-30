@@ -1,64 +1,65 @@
 #' Time-varying aggregation functions
 #'
-#' @param x A data.frame with four columns: <id>, "feature", "datetime", "value"
+#' @param value A vector of values
+#' @param datetime A datetime
 #' @param current_time The current grid row's time
 #' @param ... Other arguments (not used at this time)
-#' @return A scalar, indicating the corresponding aggregation over \code{x}.
+#' @return A scalar, indicating the corresponding aggregation over \code{value} or \code{datetime}.
 #' @name tv_aggregation
 NULL
 
 #' @rdname tv_aggregation
 #' @export
-tv_count <- function(x, ...) {
-  nrow(x)
+tv_count <- function(value, ...) {
+  length(value)
 }
 
 #' @rdname tv_aggregation
 #' @export
-tv_any <- function(x, ...) {
-  +(nrow(x) > 0)
-}
-
-
-#' @rdname tv_aggregation
-#' @export
-tv_lvcf <- function(x, ...) {
-  if(nrow(x) == 0) NA_real_ else x$value[which.max(x$datetime)]
+tv_any <- function(value, ...) {
+  +(length(value) > 0)
 }
 
 
 #' @rdname tv_aggregation
 #' @export
-tv_ts <- function(x, current_time, ...) {
-  if(nrow(x) == 0) NA_real_ else current_time - max(x$datetime)
+tv_lvcf <- function(value, datetime, ...) {
+  if(length(value) == 0) NA_real_ else value[which.max(datetime)]
+}
+
+
+#' @rdname tv_aggregation
+#' @export
+tv_ts <- function(datetime, current_time, ...) {
+  if(length(datetime) == 0) NA_real_ else current_time - max(datetime)
 }
 
 #' @rdname tv_aggregation
 #' @export
-tv_min <- function(x, ...) {
-  if(nrow(x) == 0 || all(is.na(x$value))) NA_real_ else min(x$value, na.rm = TRUE)
+tv_min <- function(value, ...) {
+  if(length(value) == 0 || all(is.na(value))) NA_real_ else min(value, na.rm = TRUE)
 }
 
 #' @rdname tv_aggregation
 #' @export
-tv_max <- function(x, ...) {
-  if(nrow(x) == 0 || all(is.na(x$value))) NA_real_ else max(x$value, na.rm = TRUE)
+tv_max <- function(value, ...) {
+  if(length(value) == 0 || all(is.na(value))) NA_real_ else max(value, na.rm = TRUE)
 }
 
 #' @rdname tv_aggregation
 #' @export
-tv_mean <- function(x, ...) {
-  if(nrow(x) == 0 || all(is.na(x$value))) NA_real_ else mean(x$value, na.rm = TRUE)
+tv_mean <- function(value, ...) {
+  if(length(value) == 0 || all(is.na(value))) NA_real_ else mean(value, na.rm = TRUE)
 }
 
 #' @rdname tv_aggregation
 #' @export
-tv_median <- function(x, ...) {
-  if(nrow(x) == 0 || all(is.na(x$value))) NA_real_ else stats::median(x$value, na.rm = TRUE)
+tv_median <- function(value, ...) {
+  if(length(value) == 0 || all(is.na(value))) NA_real_ else stats::median(value, na.rm = TRUE)
 }
 
 #' @rdname tv_aggregation
 #' @export
-tv_sum <- function(x, ...) {
-  sum(x$value, na.rm = TRUE)
+tv_sum <- function(value, ...) {
+  sum(value, na.rm = TRUE)
 }

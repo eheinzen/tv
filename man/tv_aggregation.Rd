@@ -13,33 +13,35 @@
 \alias{tv_sum}
 \title{Time-varying aggregation functions}
 \usage{
-tv_count(x, ...)
+tv_count(value, ...)
 
-tv_any(x, ...)
+tv_any(value, ...)
 
-tv_lvcf(x, ...)
+tv_lvcf(value, datetime, ...)
 
-tv_ts(x, current_time, ...)
+tv_ts(datetime, current_time, ...)
 
-tv_min(x, ...)
+tv_min(value, ...)
 
-tv_max(x, ...)
+tv_max(value, ...)
 
-tv_mean(x, ...)
+tv_mean(value, ...)
 
-tv_median(x, ...)
+tv_median(value, ...)
 
-tv_sum(x, ...)
+tv_sum(value, ...)
 }
 \arguments{
-\item{x}{A data.frame with four columns: <id>, "feature", "datetime", "value"}
+\item{value}{A vector of values}
 
 \item{...}{Other arguments (not used at this time)}
+
+\item{datetime}{A datetime}
 
 \item{current_time}{The current grid row's time}
 }
 \value{
-A scalar, indicating the corresponding aggregation over \code{x}.
+A scalar, indicating the corresponding aggregation over \code{value} or \code{datetime}.
 }
 \description{
 Time-varying aggregation functions

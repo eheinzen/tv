@@ -56,25 +56,36 @@ time_varying <- function(x, specs, exposure, ...,
 
   if(grid.only) return(grid)
 
-  FN <- if(n_cores > 1) parallel::mclapply else lapply
+  FN <- if(n_cores > 1) parallel::mcMap else Map
+
+  g2 <- grid %>%
+    dplyr::mutate(
+      dplyr::across(c("row_start", "row_stop", "exposure_start", "exposure_stop"), as.numeric),
+      ..tv.row.. = dplyr::row_number()
+    ) %>%
+    (function(xxx) split(xxx, xxx[[id]]))
+
+  revert <- order(do.call(c, lapply(g2, "[[", "..tv.row..")))
 
   x3 <- x %>%
     dplyr::mutate(
       datetime = as.numeric(.data$datetime)
     ) %>%
     (function(xxx) split(xxx, xxx[[id]]))
+
+  stopifnot(
+    length(g2) == length(x3),
+    names(g2) == names(x3)
+  )
+
   specs3 <- split(specs, seq_len(nrow(specs)))
 
-  out <- FN(seq_len(nrow(grid)), mc.cores = n_cores, function(i, ...) {
-    curr_grid <- grid[i, ]
-    curr_grid$row_start <- as.numeric(curr_grid$row_start)
-    curr_grid$row_stop <- as.numeric(curr_grid$row_stop)
-    curr_grid$exposure_start <- as.numeric(curr_grid$exposure_start)
-    curr_grid$exposure_stop <- as.numeric(curr_grid$exposure_stop)
-    y <- x3[[as.character(curr_grid[[id]])]]
+  out <- FN(x3, g2, mc.cores = n_cores, f = function(xx, gg, ...) {
+    gg <- as.matrix(gg[c("exposure_start", "row_start", "row_stop")])
+    xfeat <- xx$feature
+    yy <- as.matrix(xx[c("value", "datetime")])
 
-    tmp <- vapply(seq_len(nrow(specs)), function(s) {
-      curr_spec <- specs3[[s]]
+    tmp <- vapply(specs3, FUN.VALUE = numeric(nrow(gg)), USE.NAMES = FALSE, function(curr_spec) {
       FUN <- switch(
         curr_spec$aggregation,
         count = tv_count,
@@ -88,29 +99,44 @@ time_varying <- function(x, specs, exposure, ...,
         sum = tv_sum,
         event = tv_count
       )
-      idx <- y$feature == curr_spec$feature
-      if(curr_spec$aggregation == "event") {
-        idx <- idx & y$datetime > curr_grid$row_start & y$datetime <= curr_grid$row_stop
-      } else {
-        if(is.na(curr_spec$lookback_start)) {
-          idx <- idx & y$datetime <= curr_grid$exposure_start
-        } else {
-          idx <- idx & y$datetime <= curr_grid$row_start - curr_spec$lookback_start
-        }
-
-        if(is.na(curr_spec$lookback_end)) {
-          idx <- idx & y$datetime >= curr_grid$exposure_start
-        } else {
-          idx <- idx & y$datetime >= curr_grid$row_start - curr_spec$lookback_end
-        }
+      curr_feat <- curr_spec$feature
+      y <- yy[xfeat == curr_feat, , drop = FALSE]
+      val <- y[, 1]
+      dttm <- y[, 2]
+      if(nrow(y) == 0) {
+        return(rep.int(FUN(value = val, datetime = dttm, current_time = stop("Shouldn't need this")), nrow(gg)))
       }
-      FUN(y[idx, ], feature = curr_spec$feature, current_time = curr_grid$row_start)
-    }, NA_real_)
-    tmp <- matrix(tmp, nrow = 1)
-    colnames(tmp) <- paste0(specs$feature, "_", specs$aggregation)
+
+      curr_lookback_start <- curr_spec$lookback_start
+      curr_lookback_end <- curr_spec$lookback_end
+      curr_aggregation <- curr_spec$aggregation
+      idx.true <- rep.int(TRUE, nrow(y))
+      apply(gg, 1, function(curr_grid) {
+        curr_row_start <- curr_grid[2]
+        idx <- idx.true
+        if(curr_aggregation == "event") {
+          idx <- idx & dttm > curr_row_start & dttm <= curr_grid[3]
+        } else {
+          if(is.na(curr_lookback_start)) {
+            idx <- idx & dttm <= curr_grid[1]
+          } else {
+            idx <- idx & dttm <= curr_row_start - curr_lookback_start
+          }
+
+          if(is.na(curr_lookback_end)) {
+            idx <- idx & dttm >= curr_grid[1]
+          } else {
+            idx <- idx & dttm >= curr_row_start - curr_lookback_end
+          }
+        }
+        FUN(value = val[idx], datetime = dttm[idx], current_time = curr_row_start)
+      })
+    })
     tmp
   })
-  out2 <- as.data.frame(do.call(rbind, out))
+  out <- do.call(rbind, out)
+  dimnames(out) <- list(NULL, paste0(specs$feature, "_", specs$aggregation))
+  out2 <- as.data.frame(out[revert, , drop = FALSE])
   stopifnot(ncol(out2) == nrow(specs))
   out3 <- cbind(grid, out2)
   attr(out3, "coltype") <- c(rep_len("grid", ncol(grid)), dplyr::if_else(specs$aggregation == "event", "event", "feature"))
