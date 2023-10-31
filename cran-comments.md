@@ -1,8 +1,7 @@
-## Submission for tv 1.7.3
+## Submission for tv 2.0.0
 
-This is an updated new package submission. In this version, return values
-were added to the documentation. No references were added because there are
-none to add.
+This is a new version of the package. In this version, the internals
+were overhauled, resulting in speed boosts of at least 2x and as much as 25x.
 
 ## Test environments
 
@@ -14,6 +13,4 @@ none to add.
 
 ## R CMD check results
 
-0 errors | 0 warnings | 1 note
-
-New submission
+0 errors | 0 warnings | 0 notes
