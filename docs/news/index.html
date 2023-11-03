@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">tv</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.0</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.1</span>
       </span>
     </div>
 
@@ -45,8 +45,12 @@
     </div>
 
     <div class="section level2">
-<h2 class="page-header" data-toc-text="2.0.0" id="tv-v200">tv v2.0.0<a class="anchor" aria-label="anchor" href="#tv-v200"></a></h2>
-<ul><li>Completely overhauled the internals, for speeds boosts of up to 6x-8x.</li>
+<h2 class="page-header" data-toc-text="2.0.1" id="tv-v201">tv v2.0.1<a class="anchor" aria-label="anchor" href="#tv-v201"></a></h2>
+<ul><li>The previous version of <code>tv</code> (&lt; 2.0.0) accidentally silently dropped exposures that had zero (or negative) length. In 2.0.0 this became a non-informative error. It now has an informative error.</li>
+</ul></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="2.0.0" id="tv-v200">tv v2.0.0<small>2023-10-31</small><a class="anchor" aria-label="anchor" href="#tv-v200"></a></h2>
+<ul><li>Completely overhauled the internals, for a decent speed boost. In dense data, the speed up in practice is on the order of ~2x. In sparse data, the speed up has been witnessed as high as ~25x.</li>
 </ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="1.7.3" id="tv-v173">tv v1.7.3<small>2023-10-06</small><a class="anchor" aria-label="anchor" href="#tv-v173"></a></h2>
