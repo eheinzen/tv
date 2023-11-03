@@ -190,6 +190,11 @@ check_tv_exposure <- function(x, expected_ids, time_units, id, ..., check_overla
     x <- x[!idx, ]
   }
 
+  if(any(x$exposure_start >= x$exposure_stop)) {
+    stop("There are zero- or negative-length exposures.")
+  }
+
+
   if(check_overlap) {
     y <- dplyr::mutate(x, .exposure.row = dplyr::row_number())
     z <- dplyr::inner_join(y, y, by = id, relationship = "many-to-many") %>%

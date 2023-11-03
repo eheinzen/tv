@@ -1,3 +1,9 @@
+# tv v2.0.1
+
+- The previous version of `tv` (< 2.0.0) accidentally silently dropped exposures
+  that had zero (or negative) length. In 2.0.0 this became a non-informative
+  error. It now has an informative error.
+
 # tv v2.0.0
 
 - Completely overhauled the internals, for a decent speed boost.
