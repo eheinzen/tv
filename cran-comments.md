@@ -1,7 +1,7 @@
-## Submission for tv 2.0.0
+## Submission for tv 2.0.2
 
-This is a new version of the package. In this version, the internals
-were overhauled, resulting in speed boosts of at least 2x and as much as 25x.
+This is a new version of the package. A few more edge cases are prevented with suitable
+warnings and errors.
 
 ## Test environments
 
