@@ -1,3 +1,10 @@
+# tv v2.0.2
+
+- `tv::time_varying()` gained a `sort=` argument, to warn the user that things ought
+  to be sorted when `x$datetime` is a Date.
+  
+- Added Peter Martin as a contributor, as he inspired the v2.0.0 rewrite.
+
 # tv v2.0.1
 
 - The previous version of `tv` (< 2.0.0) accidentally silently dropped exposures

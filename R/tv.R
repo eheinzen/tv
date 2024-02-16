@@ -11,6 +11,10 @@
 #' @param expected_features A vector of expected features based on the data.
 #' @param expected_ids A vector of expected ids based on the data.
 #' @param id The id to use. Default is "pat_id"
+#' @param sort Logical, indicating whether to sort the data before performing the analysis. By default (\code{NA}),
+#'   sorting is only done when useful (that is: \code{x$datetime} is a POSIXct and \code{time_units == "days"}).
+#'   A warning is issued when \code{x$datetime} is a Date to make the user aware that the input ought to be sorted to
+#'   get the right answer.
 #' @param check_overlap Should overlap be checked among exposure rows? A potentially costly operation,
 #'   so you can opt out of it if you're really sure.
 #' @return A data.frame, with one row per grid value and one column per feature specification (plus grid columns).
@@ -32,12 +36,12 @@ NULL
 #' @export
 time_varying <- function(x, specs, exposure, ...,
                          grid.only = FALSE,
-                         time_units = c("days", "seconds"), id = "pat_id",
+                         time_units = c("days", "seconds"), id = "pat_id", sort = NA,
                          n_cores = as.numeric(Sys.getenv("SLURM_CPUS_PER_TASK", 1))) {
   opts <- options(warn = 1)
   on.exit(options(opts))
   time_units <- match.arg(time_units)
-  x <- check_tv_data(x, time_units = time_units, id = id)
+  x <- check_tv_data(x, time_units = time_units, id = id, sort = sort)
   specs <- check_tv_specs(specs, unique(x$feature))
   exposure <- check_tv_exposure(exposure, expected_ids = unique(x[[id]]), time_units = time_units, id = id, ...)
 
@@ -146,20 +150,38 @@ time_varying <- function(x, specs, exposure, ...,
 
 #' @rdname tv
 #' @export
-check_tv_data <- function(x, time_units, id) {
+check_tv_data <- function(x, time_units, id, sort) {
   cols <- c(id, "feature", "datetime", "value")
   if(!all(cols %in% names(x))) {
     stop("The data is missing some columns: ", paste0(setdiff(cols, names(x)), collapse = ", "))
   }
   if(time_units == "days") {
-    if(!lubridate::is.Date(x$datetime)) stop("You specified time_units = 'days', but x$datetime is not a Date")
+    if(!lubridate::is.POSIXct(x$datetime) && !lubridate::is.Date(x$datetime)) {
+      stop("x$datetime needs to be a Date or POSIXct.")
+    } else if(lubridate::is.Date(x$datetime) && is.na(sort)) {
+      message("x$datetime is a Date; as such, be sure that your data is sorted in descending datetime order, so that `lvcf` picks the most recent row correctly",
+              " (it picks the first row it finds).\n\n",
+              "To silence this message, please specify `sort=TRUE` or `sort=FALSE`. Defaulting to `sort=FALSE`.")
+      sort <- FALSE
+    } else if(is.na(sort)) {
+      # datetime
+      sort <- TRUE
+    }
   } else {
     if(!lubridate::is.POSIXct(x$datetime)) stop("You specified time_units = 'seconds', but x$datetime is not a POSIXct.")
+    if(is.na(sort)) sort <- FALSE
   }
+
   idx <- is.na(x$datetime)
   if(any(idx)) {
     warning("There are ", sum(idx), " missing times being removed from the data.")
     x <- x[!idx, ]
+  }
+  if(sort) {
+    x <- dplyr::arrange(x, .data[[id]], .data$feature, dplyr::desc(.data$datetime))
+  }
+  if(time_units == "days" && lubridate::is.POSIXct(x$datetime)) {
+    x$datetime <- lubridate::as_date(x$datetime)
   }
 
   x

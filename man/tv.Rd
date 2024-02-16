@@ -16,10 +16,11 @@ time_varying(
   grid.only = FALSE,
   time_units = c("days", "seconds"),
   id = "pat_id",
+  sort = NA,
   n_cores = as.numeric(Sys.getenv("SLURM_CPUS_PER_TASK", 1))
 )
 
-check_tv_data(x, time_units, id)
+check_tv_data(x, time_units, id, sort)
 
 check_tv_exposure(x, expected_ids, time_units, id, ..., check_overlap = TRUE)
 
@@ -39,6 +40,11 @@ check_tv_specs(specs, expected_features = NULL)
 \item{time_units}{What time units should be used? Seconds or days}
 
 \item{id}{The id to use. Default is "pat_id"}
+
+\item{sort}{Logical, indicating whether to sort the data before performing the analysis. By default (\code{NA}),
+sorting is only done when useful (that is: \code{x$datetime} is a POSIXct and \code{time_units == "days"}).
+A warning is issued when \code{x$datetime} is a Date to make the user aware that the input ought to be sorted to
+get the right answer.}
 
 \item{n_cores}{Number of cores to use. If slurm is being used, it checks the \code{SLURM_CPUS_PER_TASK} variable.
 Else it defaults to 1, for no parallelization.}
