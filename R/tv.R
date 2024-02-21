@@ -37,9 +37,11 @@ NULL
 time_varying <- function(x, specs, exposure, ...,
                          grid.only = FALSE,
                          time_units = c("days", "seconds"), id = "pat_id", sort = NA,
-                         n_cores = as.numeric(Sys.getenv("SLURM_CPUS_PER_TASK", 1))) {
+                         n_cores = parallelly::availableCores(omit = 1)) {
   opts <- options(warn = 1)
   on.exit(options(opts))
+  ignore <- function() parallelly::availableCores # so devtools::check finds it
+
   time_units <- match.arg(time_units)
   x <- check_tv_data(x, time_units = time_units, id = id, sort = sort)
   specs <- check_tv_specs(specs, unique(x$feature))

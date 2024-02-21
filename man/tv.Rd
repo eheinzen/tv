@@ -17,7 +17,7 @@ time_varying(
   time_units = c("days", "seconds"),
   id = "pat_id",
   sort = NA,
-  n_cores = as.numeric(Sys.getenv("SLURM_CPUS_PER_TASK", 1))
+  n_cores = parallelly::availableCores(omit = 1)
 )
 
 check_tv_data(x, time_units, id, sort)
