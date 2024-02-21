@@ -103,7 +103,8 @@ time_varying <- function(x, specs, exposure, ...,
         mean = tv_mean,
         median = tv_median,
         sum = tv_sum,
-        event = tv_count
+        event = tv_count,
+        error = stop
       )
       curr_feat <- curr_spec$feature
       y <- yy[xfeat == curr_feat, , drop = FALSE]
@@ -140,6 +141,11 @@ time_varying <- function(x, specs, exposure, ...,
     })
     tmp
   })
+  idx <- vapply(out, inherits, NA, what = "try-error")
+  if(any(idx)) {
+    stop("Errors were detected. The first one is: ", out[idx][[1]])
+  }
+
   out <- do.call(rbind, out)
   dimnames(out) <- list(NULL, paste0(specs$feature, "_", specs$aggregation))
   out2 <- as.data.frame(out[revert, , drop = FALSE])
@@ -271,7 +277,8 @@ check_tv_specs <- function(specs, expected_features = NULL) {
     mean = "mean",
     median = "median",
     sum = "sum",
-    event = "event"
+    event = "event",
+    error = "error"
   )
 
   bad <- setdiff(specs$aggregation, names(specs_map))

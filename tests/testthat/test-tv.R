@@ -33,61 +33,61 @@ result <- data.frame(
 
 test_that("the specs work", {
   expect_equal(
-    time_varying(x, specs, exposure, time_units = "days", id = "id"),
+    time_varying(x, specs, exposure, time_units = "days", id = "id", sort = FALSE),
     mutate(result, lab_lvcf = 3.3),
     ignore_attr = "coltype"
   )
 
   expect_equal(
-    time_varying(x, mutate(specs, lookback_start = 2, lookback_end = c(2, 5)), exposure, time_units = "days", id = "id"),
+    time_varying(x, mutate(specs, lookback_start = 2, lookback_end = c(2, 5)), exposure, time_units = "days", id = "id", sort = FALSE),
     mutate(result, lab_lvcf = NA_real_),
     ignore_attr = "coltype"
   )
 
   expect_equal(
-    time_varying(x, mutate(specs, lookback_start = 2, lookback_end = c(2, 18)), exposure, time_units = "days", id = "id"),
+    time_varying(x, mutate(specs, lookback_start = 2, lookback_end = c(2, 18)), exposure, time_units = "days", id = "id", sort = FALSE),
     mutate(result, lab_lvcf = 2),
     ignore_attr = "coltype"
   )
 
   expect_equal(
-    time_varying(x, mutate(specs, aggregation = c("event", "count")), exposure, time_units = "days", id = "id"),
+    time_varying(x, mutate(specs, aggregation = c("event", "count")), exposure, time_units = "days", id = "id", sort = FALSE),
     mutate(result, lab_count = 1),
     ignore_attr = "coltype"
   )
 
   expect_equal(
-    time_varying(x, mutate(specs, aggregation = c("event", "mean"), lookback_end = c(0, Inf)), exposure, time_units = "days", id = "id"),
+    time_varying(x, mutate(specs, aggregation = c("event", "mean"), lookback_end = c(0, Inf)), exposure, time_units = "days", id = "id", sort = FALSE),
     mutate(result, lab_mean = 2.1),
     ignore_attr = "coltype"
   )
 
   expect_equal(
-    time_varying(x, mutate(specs, aggregation = c("event", "median"), lookback_end = c(0, Inf)), exposure, time_units = "days", id = "id"),
+    time_varying(x, mutate(specs, aggregation = c("event", "median"), lookback_end = c(0, Inf)), exposure, time_units = "days", id = "id", sort = FALSE),
     mutate(result, lab_median = 2),
     ignore_attr = "coltype"
   )
 
   expect_equal(
-    time_varying(x, mutate(specs, aggregation = c("event", "sum"), lookback_end = c(0, Inf)), exposure, time_units = "days", id = "id"),
+    time_varying(x, mutate(specs, aggregation = c("event", "sum"), lookback_end = c(0, Inf)), exposure, time_units = "days", id = "id", sort = FALSE),
     mutate(result, lab_sum = 6.3),
     ignore_attr = "coltype"
   )
 
   expect_equal(
-    time_varying(x, mutate(specs, lookback_end = c(0, NA)), exposure, time_units = "days", id = "id"),
+    time_varying(x, mutate(specs, lookback_end = c(0, NA)), exposure, time_units = "days", id = "id", sort = FALSE),
     mutate(result, lab_lvcf = NA_real_),
     ignore_attr = "coltype"
   )
 
   expect_equal(
-    time_varying(x, mutate(specs, lookback_start = NA), exposure, time_units = "days", id = "id"),
+    time_varying(x, mutate(specs, lookback_start = NA), exposure, time_units = "days", id = "id", sort = FALSE),
     mutate(result, lab_lvcf = 3.3),
     ignore_attr = "coltype"
   )
 
   expect_equal(
-    time_varying(x, mutate(specs, lookback_start = NA, use_for_grid = TRUE), exposure, time_units = "days", id = "id"),
+    time_varying(x, mutate(specs, lookback_start = NA, use_for_grid = TRUE), exposure, time_units = "days", id = "id", sort = FALSE),
     data.frame(
       id = 1,
       exposure_start = as.Date("2023-01-01"),
@@ -101,7 +101,7 @@ test_that("the specs work", {
   )
 
   expect_equal(
-    time_varying(x, mutate(specs, lookback_end = NA, use_for_grid = TRUE), exposure, time_units = "days", id = "id"),
+    time_varying(x, mutate(specs, lookback_end = NA, use_for_grid = TRUE), exposure, time_units = "days", id = "id", sort = FALSE),
     data.frame(
       id = 1,
       exposure_start = as.Date("2023-01-01"),
@@ -132,7 +132,8 @@ test_that("overlaps are detected", {
         pat_id = c(1, 1),
         exposure_start = as.Date(c("2022-01-01", "2022-01-02")),
         exposure_stop = as.Date(c("2022-01-03", "2022-01-04"))
-      )
+      ),
+      sort = FALSE
     )),
     "overlap"
   )
@@ -145,7 +146,7 @@ test_that("overlaps are detected", {
 
 test_that("NA aggregations are detected", {
   expect_error(
-    time_varying(x, mutate(specs, aggregation = c("lvcf", NA)), exposure, time_units = "days", id = "id"),
+    time_varying(x, mutate(specs, aggregation = c("lvcf", NA)), exposure, time_units = "days", id = "id", sort = FALSE),
     "Some aggregations you supplied aren't supported: NA"
   )
 
@@ -167,7 +168,8 @@ test_that("all-NA values passed to min/max are detected and not warned", {
         pat_id = 1,
         exposure_start = as.Date("2022-01-01"),
         exposure_stop = as.Date("2022-01-03")
-      )
+      ),
+      sort = FALSE
     ),
     NA
   )
@@ -195,7 +197,8 @@ test_that("zero-length exposures are detected", {
         pat_id = c(1, 2),
         exposure_start = as.Date(c("2022-01-01", "2022-01-02")),
         exposure_stop = as.Date(c("2022-01-01", "2022-01-04"))
-      )
+      ),
+      sort = FALSE
     ),
     "There are zero- or negative-length"
   )
@@ -264,6 +267,31 @@ test_that("sorting is done right", {
 
 
 
+test_that("zero-length exposures are detected", {
+  expect_error(
+    suppressWarnings(
+      time_varying(
+        data.frame(pat_id = 1:3, feature = "lab", datetime = as.Date("2022-01-01"), value = 1),
+        specs = data.frame(
+          feature = "lab",
+          use_for_grid = FALSE,
+          lookback_start = 0,
+          lookback_end = 10,
+          aggregation = "error"
+        ),
+        exposure = data.frame(
+          pat_id = 1:3,
+          exposure_start = as.Date(c("2022-01-01")),
+          exposure_stop = as.Date(c("2022-01-02"))
+        ),
+        sort = FALSE,
+        n_cores = 2L
+      )
+    ),
+    "Errors were detected. The first one is: "
+  )
+
+})
 
 
 

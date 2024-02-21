@@ -1,3 +1,10 @@
+# tv v2.0.3
+
+- Added an error to detect when `parallel::mcMap()` has an error in one of its forked 
+  processes.
+  
+- Added `parallelly::availableCores(omit = 1)` as the new default for `n_cores=`.
+
 # tv v2.0.2
 
 - `tv::time_varying()` gained a `sort=` argument, to warn the user that things ought
