@@ -17,7 +17,7 @@
       </button>
       <span class="navbar-brand">
         <a class="navbar-link" href="../index.html">tv</a>
-        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.0.1</span>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">2.1.0</span>
       </span>
     </div>
 
@@ -44,6 +44,16 @@
       
     </div>
 
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="2.1.0" id="tv-v210">tv v2.1.0<a class="anchor" aria-label="anchor" href="#tv-v210"></a></h2>
+<ul><li><p>Added an error to detect when <code><a href="https://rdrr.io/r/parallel/mclapply.html" class="external-link">parallel::mcMap()</a></code> has an error in one of its forked processes.</p></li>
+<li><p>Added <code>parallelly::availableCores(omit = 1)</code> as the new default for <code>n_cores=</code>.</p></li>
+</ul></div>
+    <div class="section level2">
+<h2 class="page-header" data-toc-text="2.0.2" id="tv-v202">tv v2.0.2<small>2024-02-16</small><a class="anchor" aria-label="anchor" href="#tv-v202"></a></h2>
+<ul><li><p><code><a href="../reference/tv.html">tv::time_varying()</a></code> gained a <code>sort=</code> argument, to warn the user that things ought to be sorted when <code>x$datetime</code> is a Date.</p></li>
+<li><p>Added Peter Martin as a contributor, as he inspired the v2.0.0 rewrite.</p></li>
+</ul></div>
     <div class="section level2">
 <h2 class="page-header" data-toc-text="2.0.1" id="tv-v201">tv v2.0.1<a class="anchor" aria-label="anchor" href="#tv-v201"></a></h2>
 <ul><li>The previous version of <code>tv</code> (&lt; 2.0.0) accidentally silently dropped exposures that had zero (or negative) length. In 2.0.0 this became a non-informative error. It now has an informative error.</li>

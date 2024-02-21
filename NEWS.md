@@ -1,4 +1,4 @@
-# tv v2.0.3
+# tv v2.1.0
 
 - Added an error to detect when `parallel::mcMap()` has an error in one of its forked 
   processes.
