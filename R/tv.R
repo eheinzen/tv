@@ -3,7 +3,7 @@
 #' @param x A data.frame with four columns: <id>, "feature", "datetime", "value"
 #' @param specs a data.frame with four columns: "feature", "use_for_grid", "lookback_start", "lookback_end", "aggregation". See details below.
 #' @param exposure a data.frame with (at least) three columns: <id>, "exposure_start", "exposure_stop"
-#' @param grid.only Should just the grid be computed and returned? Useful only for debugging
+#' @param grid_only Should just the grid be computed and returned? Useful only for debugging
 #' @param time_units What time units should be used? Seconds or days
 #' @param n_cores Number of cores to use. If slurm is being used, it checks the \code{SLURM_CPUS_PER_TASK} variable.
 #'   Else it defaults to 1, for no parallelization.
@@ -35,7 +35,7 @@ NULL
 #' @rdname tv
 #' @export
 time_varying <- function(x, specs, exposure, ...,
-                         grid.only = FALSE,
+                         grid_only = FALSE,
                          time_units = c("days", "seconds"), id = "pat_id", sort = NA,
                          n_cores = parallelly::availableCores(omit = 1)) {
   opts <- options(warn = 1)
@@ -46,21 +46,33 @@ time_varying <- function(x, specs, exposure, ...,
   x <- check_tv_data(x, time_units = time_units, id = id, sort = sort)
   specs <- check_tv_specs(specs, unique(x$feature))
   exposure <- check_tv_exposure(exposure, expected_ids = unique(x[[id]]), time_units = time_units, id = id, ...)
+  exposure$..tv.id.. <- exposure[[id]]
 
   grid <- x %>%
     dplyr::filter(.data$feature %in% specs$feature[specs$use_for_grid]) %>%
-    dplyr::bind_rows(dplyr::mutate(dplyr::select(exposure, dplyr::all_of(id), datetime = "exposure_start"), feature = "exposure_start")) %>%
-    dplyr::distinct(.data[[id]], row_start = .data$datetime) %>%  # could use unique here, but distinct() is faster
-    dplyr::left_join(x = exposure, by = id, relationship = "many-to-many") %>%
-    dplyr::filter(.data$exposure_start <= .data$row_start, .data$row_start < .data$exposure_stop) %>%
+    dplyr::select(all_of(c("..tv.id.." = id)), "datetime") %>%
+    dplyr::bind_rows(dplyr::select(exposure, ..tv.id.., datetime = "exposure_start")) %>%
+    dplyr::distinct(..tv.id.., row_start = .data$datetime) %>%  # could use unique here, but distinct() is faster
+    dplyr::left_join(
+      x = exposure, relationship = "many-to-many",
+      by = dplyr::join_by(
+        x$..tv.id.. == y$..tv.id..,
+        x$exposure_start <= y$row_start,
+        y$row_start < x$exposure_stop
+      )
+    ) %>%
+    dplyr::select(-"..tv.id..") %>%
     dplyr::arrange(.data[[id]], .data$row_start) %>%
     dplyr::group_by(.data[[id]]) %>%
     dplyr::mutate(
-      row_stop = pmin(dplyr::lead(.data$row_start, 1), .data$exposure_stop, na.rm = TRUE)
+      row_stop = dplyr::lead(.data$row_start, 1)
     ) %>%
-    dplyr::ungroup()
+    dplyr::ungroup() %>%
+    dplyr::mutate(
+      row_stop = pmin(.data$row_stop, .data$exposure_stop, na.rm = TRUE)
+    )
 
-  if(grid.only) return(grid)
+  if(grid_only) return(grid)
 
   FN <- if(n_cores > 1) parallel::mcMap else Map
 
@@ -226,13 +238,19 @@ check_tv_exposure <- function(x, expected_ids, time_units, id, ..., check_overla
 
 
   if(check_overlap) {
-    y <- dplyr::mutate(x, .exposure.row = dplyr::row_number())
-    z <- dplyr::inner_join(y, y, by = id, relationship = "many-to-many") %>%
-      dplyr::filter(
-        .data$.exposure.row.x < .data$.exposure.row.y,
-        .data$exposure_start.y < .data$exposure_stop.x,
-        .data$exposure_stop.y > .data$exposure_start.x
+    y <- x
+    y$.exposure.row <- seq_len(nrow(y))
+    y$..tv.id.. <- y[[id]]
+    z <- dplyr::inner_join(
+      y, y, relationship = "many-to-many",
+      by = dplyr::join_by(
+        x$..tv.id.. == y$..tv.id..,
+        x$.exposure.row < y$.exposure.row,
+        y$exposure_start < x$exposure_stop,
+        y$exposure_stop > x$exposure_start
       )
+    )
+    z$..tv.id.. <- NULL
     if(nrow(z) > 0) {
       print(z)
       stop("There are overlaps in the exposure times. `time_varying()` will not return what you expect. ",
