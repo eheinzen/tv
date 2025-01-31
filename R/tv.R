@@ -48,11 +48,12 @@ time_varying <- function(x, specs, exposure, ...,
   exposure <- check_tv_exposure(exposure, expected_ids = unique(x[[id]]), time_units = time_units, id = id, ...)
   exposure$..tv.id.. <- exposure[[id]]
 
+  y <- NULL
   grid <- x %>%
     dplyr::filter(.data$feature %in% specs$feature[specs$use_for_grid]) %>%
-    dplyr::select(all_of(c("..tv.id.." = id)), "datetime") %>%
-    dplyr::bind_rows(dplyr::select(exposure, ..tv.id.., datetime = "exposure_start")) %>%
-    dplyr::distinct(..tv.id.., row_start = .data$datetime) %>%  # could use unique here, but distinct() is faster
+    dplyr::select(dplyr::all_of(c("..tv.id.." = id)), "datetime") %>%
+    dplyr::bind_rows(dplyr::select(exposure, "..tv.id..", datetime = "exposure_start")) %>%
+    dplyr::distinct(.data$..tv.id.., row_start = .data$datetime) %>%  # could use unique here, but distinct() is faster
     dplyr::left_join(
       x = exposure, relationship = "many-to-many",
       by = dplyr::join_by(

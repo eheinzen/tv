@@ -13,7 +13,7 @@ time_varying(
   specs,
   exposure,
   ...,
-  grid.only = FALSE,
+  grid_only = FALSE,
   time_units = c("days", "seconds"),
   id = "pat_id",
   sort = NA,
@@ -35,7 +35,7 @@ check_tv_specs(specs, expected_features = NULL)
 
 \item{...}{Other arguments. Currently just passes \code{check_overlap}.}
 
-\item{grid.only}{Should just the grid be computed and returned? Useful only for debugging}
+\item{grid_only}{Should just the grid be computed and returned? Useful only for debugging}
 
 \item{time_units}{What time units should be used? Seconds or days}
 

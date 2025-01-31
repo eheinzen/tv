@@ -1,3 +1,12 @@
+# tv v2.2.0
+
+- BREAKING CHANGE: the argument `grid.only=` has been changed to `grid_only=` for
+  consistency with other arguments.
+  
+- Improved performance for `time_varying()` and `check_tv_exposure()` by using
+  `dplyr::join_by()`. In particular, the latter now allows for much larger data
+  sets to have overlaps checked.
+
 # tv v2.1.0
 
 - Added an error to detect when `parallel::mcMap()` has an error in one of its forked 
